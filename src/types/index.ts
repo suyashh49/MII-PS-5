@@ -10,8 +10,8 @@ export type RootStackParamList = {
       email: string;
     };
     MaidProfile: undefined; // Add this line
-    KYCDetailsMaid: { name: string; gender: string; location: string }; // Add this line
-    HomeMaid: { name: string; govtIdPhoto: string | null; selfPhoto: string | null }; // Add this line
+    KYCDetailsMaid: { name: string; gender: string; location: string  }; // Add this line
+    HomeMaid: { name: string; govtId: string | null; imageUrl: string | null }; // Add this line
 };
   
   export interface User {

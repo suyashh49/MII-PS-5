@@ -5,6 +5,7 @@ import React from 'react';
 import { Text, Button } from 'react-native-paper';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
+import axios from 'axios';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login_Maid'>;
 
@@ -12,10 +13,16 @@ export default function LoginScreenMaid() {
   const [phone, setPhone] = useState("");
   const navigation = useNavigation<LoginScreenNavigationProp>();
 
-  const handleGetStarted = () => {
+  const handleGetStarted = async () => {
     console.log("Sending OTP to", phone);
-    alert(`OTP sent to ${phone}`);
-    navigation.navigate('Otp', { phone });
+    try {
+      await axios.post('http://192.168.193.5:5000/api/maid/send-otp', { contact: phone });
+      alert(`OTP sent to ${phone}`);
+      navigation.navigate('Otp', { phone });
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      alert("Failed to send OTP. Please try again.");
+    }
   };
 
   return (

@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { View, StyleSheet, Image, TextInput } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type KYCDetailsMaidNavigationProp = StackNavigationProp<RootStackParamList, 'KYCDetailsMaid'>;
 type KYCDetailsMaidRouteProp = RouteProp<RootStackParamList, 'KYCDetailsMaid'>;
 
 const KYCDetailsMaid = () => {
-  const [govtIdPhoto, setGovtIdPhoto] = useState<string | null>(null);
-  const [selfPhoto, setSelfPhoto] = useState<string | null>(null);
+  const [govtId, setgovtId] = useState<string | null>(null);
+  const [imageUrl, setimageUrl] = useState<string | null>(null);
   const navigation = useNavigation<KYCDetailsMaidNavigationProp>();
   const route = useRoute<KYCDetailsMaidRouteProp>();
-  const { name } = route.params;
+  const { name, gender, location } = route.params;
 
   const pickImage = async (setImage: React.Dispatch<React.SetStateAction<string | null>>) => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -29,9 +32,26 @@ const KYCDetailsMaid = () => {
     }
   };
 
-  const handleNext = () => {
-    // Navigate to the next page with the uploaded images
-    navigation.navigate('HomeMaid', { name, govtIdPhoto, selfPhoto });
+  const handleNext = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.put('http://192.168.193.5:5000/api/maid/profile', {
+        name,
+        govtId,
+        imageUrl,
+        gender,
+        location,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      alert('Profile created successfully');
+      navigation.navigate('HomeMaid', { name, govtId, imageUrl });
+    } catch (error) {
+      console.error('Error creating profile:', error);
+      alert('Failed to create profile. Please try again.');
+    }
   };
 
   return (
@@ -42,25 +62,25 @@ const KYCDetailsMaid = () => {
       <Text style={styles.label}>Upload Government ID Photo</Text>
       <Button
         mode="contained"
-        onPress={() => pickImage(setGovtIdPhoto)}
+        onPress={() => pickImage(setgovtId)}
         style={styles.button}
         contentStyle={styles.buttonContent}
         labelStyle={styles.buttonLabel}
       >
-        {govtIdPhoto ? 'Change Photo' : 'Upload Photo'}
+        {govtId ? 'Change Photo' : 'Upload Photo'}
       </Button>
-      {govtIdPhoto && <Image source={{ uri: govtIdPhoto }} style={styles.image} />}
+      {govtId && <Image source={{ uri: govtId }} style={styles.image} />}
       <Text style={styles.label}>Upload Your Photo</Text>
       <Button
         mode="contained"
-        onPress={() => pickImage(setSelfPhoto)}
+        onPress={() => pickImage(setimageUrl)}
         style={styles.button}
         contentStyle={styles.buttonContent}
         labelStyle={styles.buttonLabel}
       >
-        {selfPhoto ? 'Change Photo' : 'Upload Photo'}
+        {imageUrl ? 'Change Photo' : 'Upload Photo'}
       </Button>
-      {selfPhoto && <Image source={{ uri: selfPhoto }} style={styles.image} />}
+      {imageUrl && <Image source={{ uri: imageUrl }} style={styles.image} />}
       <Button
         mode="contained"
         onPress={handleNext}
@@ -72,7 +92,7 @@ const KYCDetailsMaid = () => {
       </Button>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -82,14 +102,14 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
+    fontSize: 24,
     marginBottom: 20,
   },
   label: {
-    marginTop: 20,
     fontSize: 16,
+    marginVertical: 10,
   },
   button: {
-    marginTop: 10,
     borderRadius: 8,
     paddingVertical: 4,
     elevation: 2,
@@ -104,14 +124,10 @@ const styles = StyleSheet.create({
   image: {
     width: 200,
     height: 200,
-    marginTop: 10,
-    borderRadius: 10,
+    marginVertical: 10,
   },
   nextButton: {
-    marginTop: 30,
-    borderRadius: 8,
-    paddingVertical: 4,
-    elevation: 2,
+    marginTop: 20,
   },
 });
 

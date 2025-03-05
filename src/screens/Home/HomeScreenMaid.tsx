@@ -8,7 +8,7 @@ type HomeScreenMaidRouteProp = RouteProp<RootStackParamList, 'HomeMaid'>;
 
 const HomeScreenMaid = () => {
   const route = useRoute<HomeScreenMaidRouteProp>();
-  const { name, govtIdPhoto, selfPhoto } = route.params;
+  const { name, govtId, imageUrl } = route.params;
 
   return (
     <View style={styles.container}>
@@ -16,9 +16,9 @@ const HomeScreenMaid = () => {
         Welcome, {name}!
       </Text>
       <Text style={styles.label}>Government ID Photo</Text>
-      {govtIdPhoto && <Image source={{ uri: govtIdPhoto }} style={styles.image} />}
+      {govtId && <Image source={{ uri: govtId }} style={styles.image} />}
       <Text style={styles.label}>Your Photo</Text>
-      {selfPhoto && <Image source={{ uri: selfPhoto }} style={styles.image} />}
+      {imageUrl && <Image source={{ uri: imageUrl }} style={styles.image} />}
     </View>
   );
 };
