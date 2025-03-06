@@ -1,28 +1,28 @@
-// src/screens/Login/LoginScreen.tsx
 import React from 'react';
 import { StyleSheet, View, Image, TouchableOpacity } from 'react-native';
-import { Text, Card, ActivityIndicator } from 'react-native-paper';
+import { Text, Card, ActivityIndicator, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 
 const LoginScreen = () => {
   const { login, isLoading } = useAuth();
+  const theme = useTheme();
 
   const handleGoogleSignIn = async () => {
     await login();
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Sign in</Text>
-      <Text style={styles.subheader}>Use your Google Account</Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.header, { color: theme.colors.onBackground }]}>Sign in</Text>
+      <Text style={[styles.subheader, { color: theme.colors.onSurfaceVariant }]}>Use your Google Account</Text>
       
       <Card style={styles.card}>
         <Card.Content style={styles.cardContent}>
           {isLoading ? (
-            <ActivityIndicator size="large" color="#4285F4" />
+            <ActivityIndicator size="large" color={theme.colors.primary} />
           ) : (
             <TouchableOpacity
-              style={styles.googleButton}
+              style={[styles.googleButton, { borderColor: theme.colors.outline }]}
               onPress={handleGoogleSignIn}
               disabled={isLoading}
             >
@@ -30,13 +30,13 @@ const LoginScreen = () => {
                 source={require('../../assets/google-icon.png')} // Add Google logo image to assets
                 style={styles.googleIcon}
               />
-              <Text style={styles.googleButtonText}>Sign in with Google</Text>
+              <Text style={[styles.googleButtonText, { color: '#000000' }]}>Sign in with Google</Text>
             </TouchableOpacity>
           )}
         </Card.Content>
       </Card>
       
-      <Text style={styles.privacyText}>
+      <Text style={[styles.privacyText, { color: theme.colors.onSurfaceVariant }]}>
         By continuing, you agree to our terms of service and privacy policy.
       </Text>
     </View>
@@ -49,19 +49,16 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f7f7f7',
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: '#202124',
     alignSelf: 'flex-start',
   },
   subheader: {
     fontSize: 16,
     marginBottom: 32,
-    color: '#5F6368',
     alignSelf: 'flex-start',
   },
   card: {
@@ -82,7 +79,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#dadce0',
     width: '100%',
   },
   googleIcon: {
@@ -92,13 +88,11 @@ const styles = StyleSheet.create({
   },
   googleButtonText: {
     fontSize: 16,
-    color: '#202124',
     fontWeight: '500',
   },
   privacyText: {
     marginTop: 24,
     fontSize: 14,
-    color: '#5F6368',
     textAlign: 'center',
   },
 });

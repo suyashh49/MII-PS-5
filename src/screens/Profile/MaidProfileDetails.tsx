@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Button, RadioButton, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
 
 type MaidProfileDetailsNavigationProp = StackNavigationProp<RootStackParamList, 'MaidProfile'>;
 
@@ -20,6 +22,12 @@ const MaidProfileDetails = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+       <TouchableOpacity 
+              style={styles.backButton} 
+              onPress={() => navigation.navigate('Profile')}
+            >
+              <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onBackground} />
+            </TouchableOpacity>
       <Text style={[styles.title, { color: theme.colors.onBackground }]}>
         Welcome, Maid!
       </Text>
@@ -106,6 +114,12 @@ const styles = StyleSheet.create({
   buttonLabel: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    //zIndex: 10,
   },
 });
 

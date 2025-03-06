@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Text, Button } from 'react-native-paper';
+import { Text, Button, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
@@ -9,6 +9,7 @@ type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Prof
 
 const ProfileScreen = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const theme = useTheme();
 
   const handleGetStarted1 = () => {
     navigation.navigate('Login');
@@ -19,8 +20,8 @@ const ProfileScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium" style={{ marginBottom: 20 }}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text variant="headlineMedium" style={[styles.title, { color: theme.colors.onBackground }]}>
         Choose your role
       </Text>
       <View style={styles.buttonContainer}>
@@ -55,6 +56,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+  },
+  title: {
+    marginBottom: 20,
   },
   buttonContainer: {
     marginTop: 32,

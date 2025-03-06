@@ -1,16 +1,15 @@
-// src/navigation/MainNavigator.tsx
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import WelcomeScreen from '../screens/Welcome/WelcomeScreen';
 import LoginScreen from '../screens/Login/LoginScreen';
-import HomeScreen from '../screens/Home/HomeScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import LoginScreenMaid from '../screens/Login/LoginScreenMaid';
 import Otp from '../screens/Login/Otp';
 import MaidProfileDetials from '../screens/Profile/MaidProfileDetails';
 import KYCPage from '../screens/Profile/KYCDetailsMaid';
 import HomeScreenMaid from '../screens/Home/HomeScreenMaid';
+import BottomTabNavigator from './BottomTabNavigator';
 import { useAuth } from '../hooks/useAuth';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -48,7 +47,7 @@ const MainNavigator = () => {
       ) : (
         <Stack.Screen 
           name="Home" 
-          component={HomeScreen}
+          component={BottomTabNavigator}
           initialParams={{ userName: user.name, email: user.email }}
         />
       )}

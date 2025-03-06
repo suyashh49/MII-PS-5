@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { View, TextInput, StyleSheet } from "react-native";
+import React, { useState } from 'react';
+import { View, TextInput, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import React from 'react';
-import { Text, Button } from 'react-native-paper';
+import { Text, Button, useTheme } from 'react-native-paper';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
 import axios from 'axios';
@@ -12,6 +11,7 @@ type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login_
 export default function LoginScreenMaid() {
   const [phone, setPhone] = useState("");
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const theme = useTheme();
 
   const handleGetStarted = async () => {
     console.log("Sending OTP to", phone);
@@ -26,11 +26,12 @@ export default function LoginScreenMaid() {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 20 }}>Enter your phone number</Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.header, { color: theme.colors.onBackground }]}>Enter your phone number</Text>
       <TextInput
-        style={{ borderBottomWidth: 1, width: 200, marginVertical: 10, textAlign: "center" }}
+        style={[styles.input, { color: theme.colors.onBackground, borderBottomColor: theme.colors.primary }]}
         placeholder="Phone Number"
+        placeholderTextColor={theme.colors.onSurfaceVariant}
         keyboardType="phone-pad"
         value={phone}
         onChangeText={setPhone}
@@ -56,6 +57,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+  },
+  header: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  input: {
+    borderBottomWidth: 1,
+    width: 200,
+    marginVertical: 10,
+    textAlign: "center",
   },
   buttonContainer: {
     marginTop: 32,

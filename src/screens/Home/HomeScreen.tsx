@@ -1,7 +1,6 @@
-// src/screens/Home/HomeScreen.tsx
 import React from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-import { Text, Button, Card, Avatar, Divider } from 'react-native-paper';
+import { Text, Button, Card, Avatar, Divider, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -16,19 +15,21 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const { userName, email } = route.params;
   const { user, logout } = useAuth();
   const photoUrl = user?.photoUrl || '';
+  const theme = useTheme();
 
   const handleLogout = async () => {
     await logout();
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.welcomeText}>Welcome back</Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+        <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>Welcome back</Text>
         <Button 
           mode="outlined" 
           onPress={handleLogout}
           style={styles.logoutButton}
+          labelStyle={{ color: theme.colors.onPrimary }}
         >
           Sign Out
         </Button>
@@ -42,36 +43,36 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
               source={{ uri: photoUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(userName) }} 
             />
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>{userName}</Text>
-              <Text style={styles.userEmail}>{email}</Text>
+              <Text style={[styles.userName, { color: theme.colors.onBackground }]}>{userName}</Text>
+              <Text style={[styles.userEmail, { color: theme.colors.onSurfaceVariant }]}>{email}</Text>
             </View>
           </Card.Content>
         </Card>
 
         <Card style={styles.infoCard}>
-          <Card.Title title="Account Information" />
+          <Card.Title title="Account Information" titleStyle={{ color: theme.colors.onBackground }} />
           <Divider />
           <Card.Content style={styles.infoCardContent}>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Name:</Text>
-              <Text style={styles.infoValue}>{userName}</Text>
+              <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Name:</Text>
+              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>{userName}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Email:</Text>
-              <Text style={styles.infoValue}>{email}</Text>
+              <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Email:</Text>
+              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>{email}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Account Type:</Text>
-              <Text style={styles.infoValue}>Google</Text>
+              <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Account Type:</Text>
+              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>Google</Text>
             </View>
           </Card.Content>
         </Card>
 
         <Card style={styles.activityCard}>
-          <Card.Title title="Recent Activity" />
+          <Card.Title title="Recent Activity" titleStyle={{ color: theme.colors.onBackground }} />
           <Divider />
           <Card.Content style={styles.activityCardContent}>
-            <Text style={styles.activityText}>You signed in just now</Text>
+            <Text style={[styles.activityText, { color: theme.colors.onBackground }]}>You signed in just now</Text>
           </Card.Content>
         </Card>
       </ScrollView>
@@ -82,7 +83,6 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   header: {
     flexDirection: 'row',
@@ -90,12 +90,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
     paddingTop: 60,
-    backgroundColor: '#4285F4',
   },
   welcomeText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
   },
   logoutButton: {
     borderColor: '#ffffff',
@@ -123,7 +121,6 @@ const styles = StyleSheet.create({
   },
   userEmail: {
     fontSize: 14,
-    color: '#5F6368',
   },
   infoCard: {
     marginBottom: 16,
@@ -140,7 +137,6 @@ const styles = StyleSheet.create({
   infoLabel: {
     width: 100,
     fontSize: 16,
-    color: '#5F6368',
   },
   infoValue: {
     flex: 1,
@@ -160,3 +156,4 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+

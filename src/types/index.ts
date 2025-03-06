@@ -1,17 +1,19 @@
 // src/types/index.ts
 export type RootStackParamList = {
-    Welcome: undefined;
-    Login_Maid: undefined;
-    Profile: undefined;
-    Login: undefined;
-    Otp: { phone: string }; 
-    Home: {
-      userName: string;
-      email: string;
-    };
-    MaidProfile: undefined; // Add this line
-    KYCDetailsMaid: { name: string; gender: string; location: string  }; // Add this line
-    HomeMaid: { name: string; govtId: string | null; imageUrl: string | null }; // Add this line
+  Welcome: undefined;
+  Login_Maid: undefined;
+  Profile: undefined;
+  Login: undefined;
+  Otp: { phone: string }; 
+  Home: {
+    userName: string;
+    email: string;
+  };
+  MaidProfile: undefined;
+  KYCDetailsMaid: { name: string; gender: string; location: string };
+  HomeMaid: { name: string; govtId: string | null; imageUrl: string | null };
+  BookMaid: undefined; // Add this line
+  CartCheckout: undefined; // Add this line
 };
   
   export interface User {
