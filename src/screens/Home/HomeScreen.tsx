@@ -4,6 +4,7 @@ import { Text, Button, Card, Avatar, Divider, useTheme } from 'react-native-pape
 import { useAuth } from '../../hooks/useAuth';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type HomeScreenRouteProp = RouteProp<RootStackParamList, 'Home'>;
 
@@ -16,7 +17,9 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const { user, logout } = useAuth();
   const photoUrl = user?.photoUrl || '';
   const theme = useTheme();
-
+  AsyncStorage.getItem('token').then(token => {
+    console.log('User token my:', token);
+});
   const handleLogout = async () => {
     await logout();
   };

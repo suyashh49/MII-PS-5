@@ -45,11 +45,7 @@ const MainNavigator = () => {
           <Stack.Screen name="HomeMaid" component={HomeScreenMaid} />
         </>
       ) : (
-        <Stack.Screen 
-          name="Home" 
-          component={BottomTabNavigator}
-          initialParams={{ userName: user.name, email: user.email }}
-        />
+        <Stack.Screen name="Home" component={BottomTabNavigator} />
       )}
     </Stack.Navigator>
   );

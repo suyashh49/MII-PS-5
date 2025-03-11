@@ -23,6 +23,7 @@ export default function LoginScreenMaid() {
       console.error("Error sending OTP:", error);
       alert("Failed to send OTP. Please try again.");
     }
+    
   };
 
   return (
