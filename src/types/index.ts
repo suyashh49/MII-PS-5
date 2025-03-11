@@ -17,6 +17,7 @@ export type RootStackParamList = {
     timeAvailable: { [key: string]: string[] };
     cooking: boolean;
     cleaning: boolean;
+    pricePerService: string;
   };
   HomeMaid: { name: string; govtId: string | null; imageUrl: string | null };
   BookMaid: undefined; // Add this line

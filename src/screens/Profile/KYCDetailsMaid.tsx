@@ -18,7 +18,7 @@ const KYCDetailsMaid = () => {
   const [imageUrl, setimageUrl] = useState<string | null>(null);
   const navigation = useNavigation<KYCDetailsMaidNavigationProp>();
   const route = useRoute<KYCDetailsMaidRouteProp>();
-  const { name, gender, location, timeAvailable, cooking, cleaning } = route.params;
+  const { name, gender, location, timeAvailable, cooking, cleaning, pricePerService } = route.params;
   const theme = useTheme();
 
   const pickImage = async (setImage: React.Dispatch<React.SetStateAction<string | null>>) => {
@@ -46,6 +46,7 @@ const KYCDetailsMaid = () => {
         timeAvailable,
         cooking,
         cleaning,
+        pricePerService,
       }, {
         headers: {
           Authorization: `Bearer ${token}`,

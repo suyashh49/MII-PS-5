@@ -17,32 +17,33 @@ const timeSlots = [
 
 const MaidProfileDetails = () => {
   const [name, setName] = useState<string>('');
-  const [gender, setGender] = useState<string>('Male'); // Initialize gender with a default value
-  const [location, setLocation] = useState<string>(''); // Initialize location
-  const [timeAvailable, setTimeAvailable] = useState<{ [key: string]: string[] }>({
-    Monday: [],
-    Tuesday: [],
-    Wednesday: [],
-    Thursday: [],
-    Friday: [],
-    Saturday: [],
-    Sunday: [],
-  });
+  const [gender, setGender] = useState<string>('Male');
+  const [location, setLocation] = useState<string>('');
+  // Use one state variable to store all selected time slots
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
   const [cooking, setCooking] = useState<boolean>(false);
   const [cleaning, setCleaning] = useState<boolean>(false);
+  // New field for price per hour
+  const [pricePerService, setpricePerService] = useState<string>('');
 
   const navigation = useNavigation<MaidProfileDetailsNavigationProp>();
   const theme = useTheme();
 
   const handleNext = () => {
-    navigation.navigate('KYCDetailsMaid', { name, gender, location, timeAvailable, cooking, cleaning });
+    // Auto-populate the same time slots for every day of the week
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const timeAvailable = days.reduce((acc, day) => {
+      acc[day] = selectedTimeSlots;
+      return acc;
+    }, {} as { [key: string]: string[] });
+
+    navigation.navigate('KYCDetailsMaid', { name, gender, location, timeAvailable, cooking, cleaning, pricePerService });
   };
 
-  const handleTimeAvailableChange = (day: string, time: string) => {
-    setTimeAvailable((prev) => ({
-      ...prev,
-      [day]: prev[day].includes(time) ? prev[day].filter((t) => t !== time) : [...prev[day], time],
-    }));
+  const handleTimeSlotChange = (time: string) => {
+    setSelectedTimeSlots(prev =>
+      prev.includes(time) ? prev.filter(t => t !== time) : [...prev, time]
+    );
   };
 
   return (
@@ -93,30 +94,38 @@ const MaidProfileDetails = () => {
           onChangeText={setLocation}
         />
         <Text style={[styles.label, { color: theme.colors.onBackground }]}>Time Available</Text>
-        {Object.keys(timeAvailable).map((day) => (
-          <View key={day} style={styles.timeAvailableRow}>
-            <Text style={[styles.dayLabel, { color: theme.colors.onSurface }]} numberOfLines={1}>{day}</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue=""
-                onValueChange={(time) => handleTimeAvailableChange(day, time)}
-                style={[styles.picker, { color: theme.colors.onBackground }]}
-              >
-                <Picker.Item label="Select time" value="" />
-                {timeSlots.map((time) => (
-                  <Picker.Item key={time} label={time} value={time} />
-                ))}
-              </Picker>
-            </View>
-            <View style={styles.selectedTimes}>
-              {timeAvailable[day].map((time, index) => (
-                <Text key={index} style={[styles.selectedTime, { color: theme.colors.onBackground }]}>
-                  {time}
-                </Text>
-              ))}
-            </View>
-          </View>
-        ))}
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue=""
+            onValueChange={(time) => {
+              if (time) {
+                handleTimeSlotChange(time);
+              }
+            }}
+            style={[styles.picker, { color: theme.colors.onBackground }]}
+          >
+            <Picker.Item label="Select time" value="" />
+            {timeSlots.map((time) => (
+              <Picker.Item key={time} label={time} value={time} />
+            ))}
+          </Picker>
+        </View>
+        <View style={styles.selectedTimes}>
+          {selectedTimeSlots.map((time, index) => (
+            <Text key={index} style={[styles.selectedTime, { color: theme.colors.onBackground }]}>
+              {time}
+            </Text>
+          ))}
+        </View>
+        <Text style={[styles.label, { color: theme.colors.onBackground }]}>Price per Hour (₹)</Text>
+        <TextInput
+          style={[styles.input, { color: theme.colors.onBackground, borderBottomColor: theme.colors.primary }]}
+          placeholder="Enter price per hour"
+          placeholderTextColor={theme.colors.onSurfaceVariant}
+          keyboardType="numeric"
+          value={pricePerService}
+          onChangeText={setpricePerService}
+        />
         <View style={styles.switchRow}>
           <Text style={[styles.label, { color: theme.colors.onBackground }]}>Cooking</Text>
           <Switch value={cooking} onValueChange={setCooking} />
@@ -152,8 +161,8 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: theme.colors.background,
     zIndex: 1,
-    elevation: 3, // Android shadow
-    shadowColor: '#000', // iOS shadow
+    elevation: 3,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -165,7 +174,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     flex: 1,
     textAlign: 'center',
-    marginRight: 24, // To balance with the back button width
+    marginRight: 24,
   },
   scrollContainer: {
     flexGrow: 1,
@@ -193,26 +202,10 @@ const styles = StyleSheet.create({
     height: 50,
     width: '100%',
   },
-  pickerWrapper: {
-    flex: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.primary,
-    marginLeft: 10,
-  },
-  timeAvailableRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-    width: '100%',
-  },
-  dayLabel: {
-    width: 80,
-    fontSize: 16,
-  },
   selectedTimes: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    flex: 1,
+    marginVertical: 10,
   },
   selectedTime: {
     marginHorizontal: 5,
