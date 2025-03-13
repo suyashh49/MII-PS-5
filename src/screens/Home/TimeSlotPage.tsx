@@ -71,7 +71,7 @@ const TimeSlotSelection: React.FC = () => {
         'Please confirm your booking by making the payment.',
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Confirm Payment', onPress: () => confirmBooking(response.data.id) },
+          { text: 'Confirm Payment', onPress: () => confirmBooking(response.data.BookingId) },
         ]
       );
     } catch (error: unknown) {
@@ -89,8 +89,8 @@ const TimeSlotSelection: React.FC = () => {
 
   const confirmBooking = async (bookingId: number) => {
     try {
-      const requestData: BookingConfirmRequestData = { bookingId };
-      await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/book', requestData, {
+      const requestData = { bookingId };
+      await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/confirm-booking', requestData, {
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${tokenAuth}`  // Include token here too

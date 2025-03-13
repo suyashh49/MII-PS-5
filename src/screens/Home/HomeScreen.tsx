@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import { Text, Button, Card, Avatar, Divider, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 type HomeScreenRouteProp = RouteProp<RootStackParamList, 'Home'>;
 
@@ -17,9 +18,31 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const { user, logout } = useAuth();
   const photoUrl = user?.photoUrl || '';
   const theme = useTheme();
-  AsyncStorage.getItem('token').then(token => {
-    console.log('User token my:', token);
-});
+  const [bookings, setBookings] = useState([]); 
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const storedToken = await user.token; // Get token before request
+  
+        const response = await axios.get(
+          'https://maid-in-india-nglj.onrender.com/api/maid/bookings',
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${storedToken}`,
+            },
+          }
+        );
+        // console.log('API Response:', response.data);
+        setBookings(response.data);
+      } catch (error) {
+        console.error('Error fetching bookings:', error);
+      }
+    };
+  
+    fetchBookings();
+  }, []);
   const handleLogout = async () => {
     await logout();
   };
@@ -77,6 +100,26 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
           <Card.Content style={styles.activityCardContent}>
             <Text style={[styles.activityText, { color: theme.colors.onBackground }]}>You signed in just now</Text>
           </Card.Content>
+        </Card>
+        <Card style={styles.activityCard}>
+          <Card.Title title="Your Bookings" titleStyle={{ color: theme.colors.onBackground }} />
+           <Card.Content style={styles.activityCardContent}>
+            {bookings.length > 0 ? (
+              <View>
+                {bookings.map((booking, index) => (
+                  <Text key={index} style={[styles.infoValue, { color: theme.colors.onBackground }]}>
+                    {`Booking Service ID: ${booking.BookingId}`}
+                    {`Maid Service ID: ${booking.maidId}`}
+                  </Text>
+                ))}
+              </View>
+            ) : (
+              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>
+                No bookings found.
+              </Text>
+            )}
+          </Card.Content>
+        
         </Card>
       </ScrollView>
     </View>

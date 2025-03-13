@@ -7,7 +7,7 @@ import { RootStackParamList } from '../../types';
 import { RouteProp } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import HomeMaid from '../Home/HomeScreenMaid'
 type OtpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Otp'>;
 type OtpScreenRouteProp = RouteProp<RootStackParamList, 'Otp'>;
 
@@ -31,6 +31,20 @@ export default function OTPVerificationScreen() {
         const { token } = response.data;
         await AsyncStorage.setItem('token', token);
         Alert.alert("OTP Verified! Logging in...");
+        const maidResponse = await axios.get('https://maid-in-india-nglj.onrender.com/api/maid/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const maid=maidResponse.data;
+        if (maid.profileCreated === true) {
+          navigation.navigate('HomeMaid', { 
+            name: maid.name, 
+            govtId: maid.govtId, 
+            imageUrl: maid.imageUrl 
+          });
+          return; // Prevent further navigation
+        }
         navigation.replace('MaidProfile');
       } else {
         Alert.alert("OTP Verification failed. Please try again.");
