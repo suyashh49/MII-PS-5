@@ -2,7 +2,7 @@
 import { User } from '../types';
 
 // Replace with your actual backend URL
-const API_URL = 'http://10.0.2.2:5000'; // 10.0.2.2 points to localhost on Android emulator
+const API_URL = 'https://maid-in-india-nglj.onrender.com'; // 10.0.2.2 points to localhost on Android emulator
 
 /**
  * Store user information in the Node.js backend

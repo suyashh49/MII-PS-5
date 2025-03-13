@@ -38,7 +38,7 @@ const KYCDetailsMaid = () => {
     try {
       //
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.put('http://10.0.2.2:5000/api/maid/profile', {
+      const response = await axios.put('https://maid-in-india-nglj.onrender.com/api/maid/profile', {
         name,
         govtId,
         imageUrl,

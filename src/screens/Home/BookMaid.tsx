@@ -53,7 +53,7 @@ const BookMaid: React.FC = () => {
     const fetchBookings = async () => {
       if (!tokenForAuth) return;
       try {
-        const response = await axios.get<Booking[]>('http://10.0.2.2:5000/api/maid/bookings', {
+        const response = await axios.get<Booking[]>('https://maid-in-india-nglj.onrender.com/api/maid/bookings', {
           headers: { 'Authorization': `Bearer ${tokenForAuth}` }
         });
         setBookings(response.data);
@@ -90,7 +90,7 @@ const BookMaid: React.FC = () => {
     setLoading(true);
     try {
       const requestData: Partial<SearchRequestData> = { location };
-      const response = await axios.post<Maid[]>('http://10.0.2.2:5000/api/maid/search', requestData, {
+      const response = await axios.post<Maid[]>('https://maid-in-india-nglj.onrender.com/api/maid/search', requestData, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${tokenForAuth}`

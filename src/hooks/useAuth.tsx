@@ -144,7 +144,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 // Replace with your own Google client ID
 const CLIENT_ID = '411763389934-btjt6a3ua0jdmc1fuhvk20nped3gdgbh.apps.googleusercontent.com';
-const API_URL = 'http://10.0.2.2:5000';
+const API_URL = 'https://maid-in-india-nglj.onrender.com';
 // Create Auth Context
 const AuthContext = createContext<AuthContextType | null>(null);
 

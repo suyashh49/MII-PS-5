@@ -22,7 +22,7 @@ export default function OTPVerificationScreen() {
     console.log("Verifying OTP for", phone);
     try {
       //
-      const response = await axios.post<{ token: string }>('http://10.0.2.2:5000/api/maid/verify-otp', {
+      const response = await axios.post<{ token: string }>('https://maid-in-india-nglj.onrender.com/api/maid/verify-otp', {
         contact: phone,
         otp: otp,
       });

@@ -60,7 +60,7 @@ const TimeSlotSelection: React.FC = () => {
         type: bookingType,
         service,
       };
-      const response = await axios.post('http://10.0.2.2:5000/api/maid/book', requestData, {
+      const response = await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/book', requestData, {
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${tokenAuth}`  // Include the token here
@@ -90,7 +90,7 @@ const TimeSlotSelection: React.FC = () => {
   const confirmBooking = async (bookingId: number) => {
     try {
       const requestData: BookingConfirmRequestData = { bookingId };
-      await axios.post('http://10.0.2.2:5000/api/maid/book', requestData, {
+      await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/book', requestData, {
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${tokenAuth}`  // Include token here too
