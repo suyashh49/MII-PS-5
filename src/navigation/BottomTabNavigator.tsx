@@ -4,6 +4,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import HomeScreen from '../screens/Home/HomeScreen';
 import BookMaid from '../screens/Home/BookMaid';
 import CartCheckout from '../screens/Home/CartCheckout';
+import BookStackNavigator from './BookStackNavigator';
 import { useAuth } from '../hooks/useAuth';
 
 const Tab = createBottomTabNavigator();
@@ -55,7 +56,7 @@ const BottomTabNavigator = () => {
         component={HomeScreenWrapper}
         options={{ headerShown: false }}
       />
-      <Tab.Screen name="BookMaid" component={BookMaid} options={{ headerShown: false }}/>
+      <Tab.Screen name="BookMaid" component={BookStackNavigator} options={{ headerShown: false }}/>
       <Tab.Screen name="CartCheckout" component={CartCheckout} options={{ headerShown: false }}/>
     </Tab.Navigator>
   );

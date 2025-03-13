@@ -22,6 +22,20 @@ export type RootStackParamList = {
   HomeMaid: { name: string; govtId: string | null; imageUrl: string | null };
   BookMaid: undefined; // Add this line
   CartCheckout: undefined; // Add this line
+  // TimeSlotSelection: {
+  //   maid: Maid;
+  //   bookingType: number ;
+  //   service: 'cooking' | 'cleaning' | 'both';
+  // };
+};
+
+export type BookStackParamList = {
+  BookMaid: undefined;
+  TimeSlotSelection: {
+    maid: Maid;
+    bookingType: number; // Make sure this is non-nullable; adjust your logic if needed.
+    service: 'cooking' | 'cleaning' | 'both';
+  };
 };
   
   export interface User {
@@ -76,6 +90,7 @@ export type RootStackParamList = {
     slot: {
       [day: string]: string;
     };
+    service: 'cleaning' | 'cooking' | 'both';
     paymentStatus: boolean;
     createdAt: string;
     updatedAt: string;

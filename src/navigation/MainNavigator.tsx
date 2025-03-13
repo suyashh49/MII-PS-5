@@ -1,3 +1,4 @@
+// MainNavigator.tsx
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
@@ -27,25 +28,29 @@ const MainNavigator = () => {
   }
 
   return (
-    <Stack.Navigator 
-      screenOptions={{ 
+    <Stack.Navigator
+      screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: '#f7f7f7' }
+        cardStyle: { backgroundColor: '#f7f7f7' },
       }}
     >
       {!user ? (
         <>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Profile" component={ProfileScreen}/>
+          <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="Login_Maid" component={LoginScreenMaid} />
           <Stack.Screen name="Otp" component={Otp} />
           <Stack.Screen name="MaidProfile" component={MaidProfileDetials} />
           <Stack.Screen name="KYCDetailsMaid" component={KYCPage} />
           <Stack.Screen name="HomeMaid" component={HomeScreenMaid} />
+          {/* Optionally include TimeSlotSelection here if needed */}
         </>
       ) : (
-        <Stack.Screen name="Home" component={BottomTabNavigator} />
+        <>
+          <Stack.Screen name="Home" component={BottomTabNavigator} />
+          {/* Removed separate TimeSlotSelection so it stays within the Book tab */}
+        </>
       )}
     </Stack.Navigator>
   );

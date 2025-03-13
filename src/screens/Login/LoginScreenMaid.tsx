@@ -16,7 +16,8 @@ export default function LoginScreenMaid() {
   const handleGetStarted = async () => {
     console.log("Sending OTP to", phone);
     try {
-      await axios.post('http://192.168.193.5:5000/api/maid/send-otp', { contact: phone });
+      //
+      await axios.post('http://10.0.2.2:5000/api/maid/send-otp', { contact: phone });
       alert(`OTP sent to ${phone}`);
       navigation.navigate('Otp', { phone });
     } catch (error) {
