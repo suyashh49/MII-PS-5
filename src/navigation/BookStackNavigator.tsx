@@ -5,7 +5,7 @@ import BookMaid from '../screens/Home/BookMaid';
 import TimeSlotSelection from '../screens/Home/TimeSlotPage';
 import { useTheme } from 'react-native-paper';
 import { BookStackParamList } from '../types/index';
-
+import Feedback from '../screens/Home/Feedback'
 const Stack = createStackNavigator<BookStackParamList>();
 
 
@@ -29,6 +29,7 @@ const BookStackNavigator = () => {
         component={TimeSlotSelection}
         options={{ title: 'Select Time Slot', headerShown: false }}
       />
+      <Stack.Screen name="Feedback" component={Feedback} />
     </Stack.Navigator>
   );
 };

@@ -53,7 +53,7 @@ const BookMaid: React.FC = () => {
     const fetchBookings = async () => {
       if (!tokenForAuth) return;
       try {
-        const response = await axios.get<Booking[]>('https://maid-in-india-nglj.onrender.com/api/maid/bookings', {
+        const response = awgit adeait axios.get<Booking[]>('https://maid-in-india-nglj.onrender.com/api/maid/bookings', {
           headers: { 'Authorization': `Bearer ${tokenForAuth}` }
         });
         setBookings(response.data);

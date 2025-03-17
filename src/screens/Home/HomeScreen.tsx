@@ -3,6 +3,7 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import { Text, Button, Card, Avatar, Divider, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import { RouteProp } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -19,7 +20,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const photoUrl = user?.photoUrl || '';
   const theme = useTheme();
   const [bookings, setBookings] = useState([]); 
-
+  const navigation = useNavigation();
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -102,22 +103,45 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
           </Card.Content>
         </Card>
         <Card style={styles.activityCard}>
-          <Card.Title title="Your Bookings" titleStyle={{ color: theme.colors.onBackground }} />
-           <Card.Content style={styles.activityCardContent}>
-            {bookings.length > 0 ? (
-              <View>
-                {bookings.map((booking, index) => (
-                  <Text key={index} style={[styles.infoValue, { color: theme.colors.onBackground }]}>
-                    {`Booking Service ID: ${booking.BookingId}`}
-                    {`Maid Service ID: ${booking.maidId}`}
-                  </Text>
+        
+          <Card.Title title="Bookings" titleStyle={{ color: theme.colors.onBackground }} />
+          <Divider />
+          <Card.Content style={styles.activityCardContent}>
+            {bookings.map((booking: any) => (
+              <Card key={booking.BookingId} style={styles.bookingCard}>
+                <Card.Content>
+                  <View style={styles.bookingRow}>
+                    <Text style={styles.bookingText}>
+                      <Text style={styles.boldText}>Booking ID:</Text> {booking.BookingId} 
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <Text style={styles.boldText}>Maid:</Text> {booking.maidId}
+                    </Text>
+                  </View>
+                  
+                  {Object.entries(booking.slot).map(([day, time]) => (
+                  <View key={day} style={styles.slotRow}>
+                    <Text style={[styles.slotDay, { color: theme.colors.onSurfaceVariant }]}>
+                      {day}:
+                    </Text>
+                    <Text style={[styles.slotTime, { color: theme.colors.onSurfaceVariant }]}>
+                      {time}
+                    </Text>
+                
+                  </View>
                 ))}
-              </View>
-            ) : (
-              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>
-                No bookings found.
-              </Text>
-            )}
+
+                      <Button 
+                        mode="contained"
+                        onPress={() =>
+                          navigation.navigate('Feedback', { bookingId: booking.BookingId })
+                        }
+                        style={{ marginTop: 8 }}
+                      >
+                        Give Feedback
+                      </Button>
+                </Card.Content>
+              </Card>
+            ))}
           </Card.Content>
         
         </Card>
@@ -199,6 +223,65 @@ const styles = StyleSheet.create({
   activityText: {
     fontSize: 16,
   },
+  bookingCard: {
+    marginBottom: 12,
+    borderRadius: 8,
+    elevation: 3, // Android shadow
+    backgroundColor: '#1e1e1e', // dark grey card background
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  bookingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  bookingText: {
+    fontSize: 16,
+    color: 'blue',
+  },
+  maidText: {
+    fontSize: 14,
+    color: 'blue',
+  },
+  boldText: {
+    fontWeight: 'bold',
+  },
+  slotContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'blue',
+  },
+  slotTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'blue',
+    marginBottom: 4,
+  },
+  slotRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+  },
+  slotDay: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginRight: 6,
+    color: 'blue',
+  },
+  slotTime: {
+    fontSize: 14,
+    color: 'blue',
+  },
+  noBookingsText: {
+    fontSize: 16,
+    color: 'blue',
+    textAlign: 'center',
+  },
+  
+  
 });
 
 export default HomeScreen;

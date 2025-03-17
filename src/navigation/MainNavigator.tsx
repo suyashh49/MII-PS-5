@@ -13,7 +13,7 @@ import HomeScreenMaid from '../screens/Home/HomeScreenMaid';
 import BottomTabNavigator from './BottomTabNavigator';
 import { useAuth } from '../hooks/useAuth';
 import { ActivityIndicator, View } from 'react-native';
-
+import Feedback from '../screens/Home/Feedback';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const MainNavigator = () => {
@@ -52,6 +52,7 @@ const MainNavigator = () => {
           {/* Removed separate TimeSlotSelection so it stays within the Book tab */}
         </>
       )}
+       <Stack.Screen name="Feedback" component={Feedback} />
     </Stack.Navigator>
   );
 };

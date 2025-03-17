@@ -19,6 +19,7 @@ export type RootStackParamList = {
     cleaning: boolean;
     pricePerService: string;
   };
+  Feedback: { bookingId: string };
   HomeMaid: { name: string; govtId: string | null; imageUrl: string | null };
   BookMaid: undefined; // Add this line
   CartCheckout: undefined; // Add this line
