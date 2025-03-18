@@ -4,8 +4,9 @@ import { Text, Button, Card, Avatar, Divider, useTheme } from 'react-native-pape
 import { useAuth } from '../../hooks/useAuth';
 import { RouteProp } from '@react-navigation/native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../../types';
+import { RootStackParamList , User, Booking } from '../../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
 
 type HomeScreenRouteProp = RouteProp<RootStackParamList, 'Home'>;
@@ -14,17 +15,19 @@ interface HomeScreenProps {
   route: HomeScreenRouteProp;
 }
 
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+
 const HomeScreen = ({ route }: HomeScreenProps) => {
   const { userName, email } = route.params;
   const { user, logout } = useAuth();
   const photoUrl = user?.photoUrl || '';
   const theme = useTheme();
-  const [bookings, setBookings] = useState([]); 
-  const navigation = useNavigation();
+  const [bookings, setBookings] = useState<Booking[]>([]); 
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const storedToken = await user.token; // Get token before request
+        const storedToken = await user?.token; // Get token before request
   
         const response = await axios.get(
           'https://maid-in-india-nglj.onrender.com/api/maid/bookings',
@@ -118,13 +121,13 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
                     </Text>
                   </View>
                   
-                  {Object.entries(booking.slot).map(([day, time]) => (
+                  {(Object.entries(booking.slot) as [string, string][]).map(([day, time]) => (
                   <View key={day} style={styles.slotRow}>
                     <Text style={[styles.slotDay, { color: theme.colors.onSurfaceVariant }]}>
                       {day}:
                     </Text>
                     <Text style={[styles.slotTime, { color: theme.colors.onSurfaceVariant }]}>
-                      {time}
+                    {time}
                     </Text>
                 
                   </View>

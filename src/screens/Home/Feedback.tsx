@@ -71,7 +71,7 @@ const Feedback = () => {
   );
 };
 
-export default Feedback;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -100,3 +100,5 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+
+export default Feedback;

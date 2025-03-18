@@ -29,7 +29,7 @@ const BookStackNavigator = () => {
         component={TimeSlotSelection}
         options={{ title: 'Select Time Slot', headerShown: false }}
       />
-      <Stack.Screen name="Feedback" component={Feedback} />
+      <Stack.Screen name="Feedback" component={Feedback} options={{ title: 'Feedback', headerShown: false }}/>
     </Stack.Navigator>
   );
 };
