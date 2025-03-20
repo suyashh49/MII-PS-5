@@ -38,7 +38,7 @@
 //   // bookingType selection and service selection state.
 //   const [bookingType, setBookingType] = useState<number | null>(null);
 //   const [selectedService, setSelectedService] = useState<{ [maidId: number]: 'cooking' | 'cleaning' | 'both' }>({});
-  
+
 //   useEffect(() => {
 //     AsyncStorage.getItem('token').then(token => {
 //       setStoredToken(token);
@@ -73,6 +73,26 @@
 //     }
 //   };
 
+//   // Helper: Returns allowed days based on booking type.
+//   const getAllowedDays = (): string[] => {
+//     if (bookingType === 1) return ['Monday', 'Wednesday', 'Friday'];
+//     if (bookingType === 2) return ['Tuesday', 'Thursday', 'Saturday'];
+//     if (bookingType === 3) return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+//     return [];
+//   };
+
+//   // New helper: Checks if a maid's available slots cover all required allowed days.
+//   const maidMatchesBookingType = (maid: Maid): boolean => {
+//     if (!bookingType) return true; // if no type selected, do not filter out
+//     const allowedDays = getAllowedDays();
+//     // For each allowed day, ensure the maid has at least one time slot available
+//     return allowedDays.every(day => 
+//       maid.timeAvailable && 
+//       Array.isArray(maid.timeAvailable[day]) && 
+//       maid.timeAvailable[day].length > 0
+//     );
+//   };
+
 //   // Updated search: now only requires location.
 //   const handleSearch = async () => {
 //     if (!tokenForAuth) {
@@ -96,8 +116,10 @@
 //           'Authorization': `Bearer ${tokenForAuth}`
 //         }
 //       });
-//       setMaids(response.data);
-//       if (response.data.length === 0) {
+//       // Filter out maids that don't meet the allowed days availability
+//       const filteredMaids = response.data.filter(maid => maidMatchesBookingType(maid));
+//       setMaids(filteredMaids);
+//       if (filteredMaids.length === 0) {
 //         Alert.alert('No Results', 'No maids available for the given criteria.');
 //       }
 //     } catch (error: unknown) {
@@ -116,27 +138,51 @@
 //     }
 //   };
 
-//   // Helper function to check if a specific service is booked for a maid.
-//   // Only bookings with paymentStatus true are counted.
-//   const isServiceBooked = (maidId: number, service: 'cooking' | 'cleaning'): boolean => {
-//     const bookingsForMaid = bookings.filter(b => b.maidId === maidId && b.paymentStatus === true);
-//     // If any booking booked both services, then both are considered booked.
-//     if (bookingsForMaid.some(b => b.service === 'both')) {
-//       return true;
+//   // Helper function to check if a specific service is booked for a maid on all allowed days
+//   const isServiceFullyBooked = (maidId: number, service: 'cooking' | 'cleaning'): boolean => {
+//     if (!bookingType) return false;
+//     const allowedDays = getAllowedDays();
+//     const bookingsForMaid = bookings.filter(b => 
+//       b.maidId === maidId && 
+//       b.paymentStatus === true
+//     );
+//     if (bookingsForMaid.length === 0) return false;
+//     for (const day of allowedDays) {
+//       let isBookedForThisDay = false;
+//       for (const booking of bookingsForMaid) {
+//         const hasBookingForDay = booking.slot && Object.keys(booking.slot).includes(day);
+//         if (hasBookingForDay) {
+//           if (booking.service === 'both') {
+//             isBookedForThisDay = true;
+//             break;
+//           }
+//           if (booking.service === service) {
+//             isBookedForThisDay = true;
+//             break;
+//           }
+//         }
+//       }
+//       if (!isBookedForThisDay) {
+//         return false;
+//       }
 //     }
-//     return bookingsForMaid.some(b => b.service === service);
+//     return true;
 //   };
 
 //   // Toggle the service selection for a given maid.
 //   const toggleService = (maidId: number, service: 'cooking' | 'cleaning') => {
-//     if (isServiceBooked(maidId, service)) {
-//       Alert.alert('Service Unavailable', `The ${service} service is already booked for this maid.`);
+//     if (isServiceFullyBooked(maidId, service)) {
+//       Alert.alert('Service Unavailable', `The ${service} service is fully booked for this maid on the selected days.`);
 //       return;
 //     }
 //     setSelectedService(prev => {
 //       const current = prev[maidId];
 //       if (current === service) {
-//         return { ...prev, [maidId]: 'both' };
+//         const otherService = service === 'cooking' ? 'cleaning' : 'cooking';
+//         if (!isServiceFullyBooked(maidId, otherService)) {
+//           return { ...prev, [maidId]: 'both' };
+//         }
+//         return { ...prev, [maidId]: service };
 //       }
 //       if (current === 'both') {
 //         return { ...prev, [maidId]: service };
@@ -157,13 +203,13 @@
 //       return;
 //     }
 //     if (serviceSelected === 'both') {
-//       if (isServiceBooked(maid.maidId, 'cooking') || isServiceBooked(maid.maidId, 'cleaning')) {
-//         Alert.alert('Service Unavailable', 'One or both services are already booked. Please select the available service.');
+//       if (isServiceFullyBooked(maid.maidId, 'cooking') || isServiceFullyBooked(maid.maidId, 'cleaning')) {
+//         Alert.alert('Service Unavailable', 'One or both services are fully booked on the selected days. Please select the available service.');
 //         return;
 //       }
 //     } else {
-//       if (isServiceBooked(maid.maidId, serviceSelected)) {
-//         Alert.alert('Service Unavailable', `The ${serviceSelected} service is already booked. Please select another service.`);
+//       if (isServiceFullyBooked(maid.maidId, serviceSelected)) {
+//         Alert.alert('Service Unavailable', `The ${serviceSelected} service is fully booked on the selected days. Please select another service.`);
 //         return;
 //       }
 //     }
@@ -171,14 +217,19 @@
 //       maid,
 //       bookingType: bookingType!,
 //       service: serviceSelected as 'cooking' | 'cleaning' | 'both',
+//       pricePerService:
+//       typeof maid.pricePerService === 'number'
+//         ? maid.pricePerService
+//         : Number(maid.pricePerService),
 //     });
 //   };
 
 //   // Render clickable service buttons with disabled state if that service is already booked.
 //   const renderServiceButtons = (maid: Maid) => {
 //     const serviceSelected = selectedService[maid.maidId] || '';
-//     const cookingBooked = isServiceBooked(maid.maidId, 'cooking');
-//     const cleaningBooked = isServiceBooked(maid.maidId, 'cleaning');
+//     const cookingFullyBooked = isServiceFullyBooked(maid.maidId, 'cooking');
+//     const cleaningFullyBooked = isServiceFullyBooked(maid.maidId, 'cleaning');
+    
 //     return (
 //       <View style={styles.serviceButtonsContainer}>
 //         {maid.cleaning && (
@@ -186,9 +237,9 @@
 //             mode={serviceSelected === 'cleaning' || serviceSelected === 'both' ? 'contained' : 'outlined'}
 //             onPress={() => toggleService(maid.maidId, 'cleaning')}
 //             style={styles.serviceButton}
-//             disabled={cleaningBooked}
+//             disabled={cleaningFullyBooked}
 //           >
-//             Cleaning {cleaningBooked ? '(Booked)' : ''}
+//             Cleaning {cleaningFullyBooked ? '(Fully Booked)' : ''}
 //           </Button>
 //         )}
 //         {maid.cooking && (
@@ -196,13 +247,25 @@
 //             mode={serviceSelected === 'cooking' || serviceSelected === 'both' ? 'contained' : 'outlined'}
 //             onPress={() => toggleService(maid.maidId, 'cooking')}
 //             style={styles.serviceButton}
-//             disabled={cookingBooked}
+//             disabled={cookingFullyBooked}
 //           >
-//             Cooking {cookingBooked ? '(Booked)' : ''}
+//             Cooking {cookingFullyBooked ? '(Fully Booked)' : ''}
 //           </Button>
 //         )}
 //       </View>
 //     );
+//   };
+
+//   // Helper: For a given maid, show only the allowed available days (if booking type is selected)
+//   const getDisplayAvailableDays = (maid: Maid): string => {
+//     if (bookingType && maid.timeAvailable) {
+//       const allowedDays = getAllowedDays();
+//       const available = allowedDays.filter(day => 
+//         Array.isArray(maid.timeAvailable[day]) && maid.timeAvailable[day].length > 0
+//       );
+//       return available.join(', ');
+//     }
+//     return maid.timeAvailable ? Object.keys(maid.timeAvailable).join(', ') : 'Not specified';
 //   };
 
 //   return (
@@ -220,6 +283,7 @@
 //         <TextInput
 //           style={styles.searchInput}
 //           placeholder="Enter location"
+//           placeholderTextColor={theme.colors.onSurfaceVariant}
 //           value={location}
 //           onChangeText={setLocation}
 //         />
@@ -231,14 +295,14 @@
 //               onPress={() => setBookingType(1)}
 //               style={styles.typeButton}
 //             >
-//               Weekly 1-3-5
+//               M - W - F
 //             </Button>
 //             <Button 
 //               mode={bookingType === 2 ? 'contained' : 'outlined'} 
 //               onPress={() => setBookingType(2)}
 //               style={styles.typeButton}
 //             >
-//               Weekly 2-4-6
+//               T - Th - S
 //             </Button>
 //             <Button 
 //               mode={bookingType === 3 ? 'contained' : 'outlined'} 
@@ -272,11 +336,12 @@
 //         )}
         
 //         {maids.map((maid) => {
-//           const cookingBooked = isServiceBooked(maid.maidId, 'cooking');
-//           const cleaningBooked = isServiceBooked(maid.maidId, 'cleaning');
-//           const allBooked = cookingBooked && cleaningBooked;
+//           const cookingFullyBooked = isServiceFullyBooked(maid.maidId, 'cooking');
+//           const cleaningFullyBooked = isServiceFullyBooked(maid.maidId, 'cleaning');
+//           const allFullyBooked = cookingFullyBooked && cleaningFullyBooked;
+          
 //           return (
-//             <Card key={maid.maidId} style={[styles.maidCard, allBooked && styles.bookedMaidCard]}>
+//             <Card key={maid.maidId} style={[styles.maidCard, allFullyBooked && styles.bookedMaidCard]}>
 //               <Card.Content>
 //                 <View style={styles.maidInfo}>
 //                   <Avatar.Image 
@@ -292,7 +357,7 @@
 //                     </Text>
 //                     <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
 //                       {maid.pricePerService
-//                         ? `Cleaning: ₹${maid.pricePerService.cleaning || 'N/A'} | Cooking: ₹${maid.pricePerService.cooking || 'N/A'}`
+//                         ? `Cleaning: ₹${maid.pricePerService || 'N/A'} | Cooking: ₹${maid.pricePerService || 'N/A'}`
 //                         : 'Price: Not specified'
 //                       }
 //                     </Text>
@@ -300,12 +365,12 @@
 //                       Contact: {maid.contact}
 //                     </Text>
 //                     <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
-//                       Available: {maid.timeAvailable ? Object.keys(maid.timeAvailable).join(', ') : 'Not specified'}
+//                       Available: {getDisplayAvailableDays(maid)}
 //                     </Text>
 //                     {renderServiceButtons(maid)}
-//                     {allBooked && (
+//                     {allFullyBooked && (
 //                       <Text style={styles.bookedText}>
-//                         Already booked
+//                         All services fully booked for selected days
 //                       </Text>
 //                     )}
 //                   </View>
@@ -314,7 +379,7 @@
 //                   mode="contained" 
 //                   onPress={() => handleBook(maid)} 
 //                   style={styles.bookButton}
-//                   disabled={allBooked}
+//                   disabled={allFullyBooked}
 //                 >
 //                   Book
 //                 </Button>
@@ -341,13 +406,14 @@
 //   searchContainer: { padding: 16 },
 //   searchInput: { 
 //     borderBottomWidth: 1,
+//     color: '#ccc',
 //     borderBottomColor: '#ccc',
 //     marginBottom: 12,
 //     height: 40,
 //     paddingHorizontal: 8,
 //   },
-//   typeSelector: { marginBottom: 12 },
-//   typeSelectorLabel: { marginBottom: 4, fontSize: 16 },
+//   typeSelector: { marginBottom: 15 },
+//   typeSelectorLabel: { marginBottom: 16, fontSize: 16 },
 //   typeOptions: { flexDirection: 'row', justifyContent: 'space-between' },
 //   typeButton: { flex: 1, marginHorizontal: 4 },
 //   searchButton: { marginTop: 8 },
@@ -375,7 +441,7 @@ import { Text, Button, Card, Avatar, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { User, Maid, Booking, SearchRequestData, BookRequestData, BookingConfirmRequestData, AuthHook, ErrorResponse } from '../../types/index';
 import { BookStackParamList } from '../../types/index'; // adjust the path
@@ -409,7 +475,41 @@ const BookMaid: React.FC = () => {
   // bookingType selection and service selection state.
   const [bookingType, setBookingType] = useState<number | null>(null);
   const [selectedService, setSelectedService] = useState<{ [maidId: number]: 'cooking' | 'cleaning' | 'both' }>({});
-  
+
+  // Reset state function
+  const resetState = () => {
+    setLocation('');
+    setMaids([]);
+    setBookingType(null);
+    setSelectedService({});
+  };
+
+  // Use useFocusEffect to reset state when the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // This will execute whenever the screen comes into focus
+      resetState();
+      
+      // Fetch the latest bookings when the screen is focused
+      const fetchBookings = async () => {
+        if (!tokenForAuth) return;
+        try {
+          const response = await axios.get<Booking[]>('https://maid-in-india-nglj.onrender.com/api/maid/bookings', {
+            headers: { 'Authorization': `Bearer ${tokenForAuth}` }
+          });
+          setBookings(response.data);
+        } catch (error) {
+          console.error('Error fetching bookings:', error);
+        }
+      };
+      fetchBookings();
+      
+      return () => {
+        // Optional cleanup
+      };
+    }, [])
+  );
+
   useEffect(() => {
     AsyncStorage.getItem('token').then(token => {
       setStoredToken(token);
@@ -419,7 +519,7 @@ const BookMaid: React.FC = () => {
 
   const tokenForAuth = user?.token || storedToken;
 
-  // Fetch full booking details.
+  // Fetch full booking details only on initial load, not on every focus
   useEffect(() => {
     const fetchBookings = async () => {
       if (!tokenForAuth) return;
@@ -442,6 +542,26 @@ const BookMaid: React.FC = () => {
       console.error('Logout failed:', error);
       Alert.alert('Error', 'Failed to sign out. Please try again.');
     }
+  };
+
+  // Helper: Returns allowed days based on booking type.
+  const getAllowedDays = (): string[] => {
+    if (bookingType === 1) return ['Monday', 'Wednesday', 'Friday'];
+    if (bookingType === 2) return ['Tuesday', 'Thursday', 'Saturday'];
+    if (bookingType === 3) return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return [];
+  };
+
+  // New helper: Checks if a maid's available slots cover all required allowed days.
+  const maidMatchesBookingType = (maid: Maid): boolean => {
+    if (!bookingType) return true; // if no type selected, do not filter out
+    const allowedDays = getAllowedDays();
+    // For each allowed day, ensure the maid has at least one time slot available
+    return allowedDays.every(day => 
+      maid.timeAvailable && 
+      Array.isArray(maid.timeAvailable[day]) && 
+      maid.timeAvailable[day].length > 0
+    );
   };
 
   // Updated search: now only requires location.
@@ -467,8 +587,10 @@ const BookMaid: React.FC = () => {
           'Authorization': `Bearer ${tokenForAuth}`
         }
       });
-      setMaids(response.data);
-      if (response.data.length === 0) {
+      // Filter out maids that don't meet the allowed days availability
+      const filteredMaids = response.data.filter(maid => maidMatchesBookingType(maid));
+      setMaids(filteredMaids);
+      if (filteredMaids.length === 0) {
         Alert.alert('No Results', 'No maids available for the given criteria.');
       }
     } catch (error: unknown) {
@@ -487,60 +609,34 @@ const BookMaid: React.FC = () => {
     }
   };
 
-  // Get allowed days based on booking type
-  const getAllowedDays = (): string[] => {
-    if (bookingType === 1) return ['Monday', 'Wednesday', 'Friday'];
-    if (bookingType === 2) return ['Tuesday', 'Thursday', 'Saturday'];
-    if (bookingType === 3) return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    return [];
-  };
-
   // Helper function to check if a specific service is booked for a maid on all allowed days
   const isServiceFullyBooked = (maidId: number, service: 'cooking' | 'cleaning'): boolean => {
-    // If no booking type is selected, we can't determine if a service is booked
     if (!bookingType) return false;
-    
     const allowedDays = getAllowedDays();
     const bookingsForMaid = bookings.filter(b => 
       b.maidId === maidId && 
       b.paymentStatus === true
     );
-
-    // If there are no bookings for this maid, the service is not booked
     if (bookingsForMaid.length === 0) return false;
-
-    // Check if the specified service is booked for each allowed day
     for (const day of allowedDays) {
       let isBookedForThisDay = false;
-      
       for (const booking of bookingsForMaid) {
-        // Check if this booking includes the current day
         const hasBookingForDay = booking.slot && Object.keys(booking.slot).includes(day);
-        
         if (hasBookingForDay) {
-          // If booking is for 'both' services, then both cooking and cleaning are unavailable
           if (booking.service === 'both') {
             isBookedForThisDay = true;
             break;
           }
-          
-          // If booking is specifically for the requested service
           if (booking.service === service) {
             isBookedForThisDay = true;
             break;
           }
         }
       }
-      
-      // If there's at least one day where the service isn't booked, 
-      // then the service is not fully booked
       if (!isBookedForThisDay) {
         return false;
       }
     }
-    
-    // If we've checked all days and the service is booked for each one,
-    // then the service is fully booked
     return true;
   };
 
@@ -553,7 +649,6 @@ const BookMaid: React.FC = () => {
     setSelectedService(prev => {
       const current = prev[maidId];
       if (current === service) {
-        // If the other service isn't fully booked either, allow 'both'
         const otherService = service === 'cooking' ? 'cleaning' : 'cooking';
         if (!isServiceFullyBooked(maidId, otherService)) {
           return { ...prev, [maidId]: 'both' };
@@ -561,10 +656,8 @@ const BookMaid: React.FC = () => {
         return { ...prev, [maidId]: service };
       }
       if (current === 'both') {
-        // Toggle from 'both' to just this service
         return { ...prev, [maidId]: service };
       }
-      // Set this service
       return { ...prev, [maidId]: service };
     });
   };
@@ -580,8 +673,6 @@ const BookMaid: React.FC = () => {
       Alert.alert('Service Not Selected', 'Please select a service (Cooking, Cleaning, or Both) before booking.');
       return;
     }
-    
-    // Check if the selected service is fully booked
     if (serviceSelected === 'both') {
       if (isServiceFullyBooked(maid.maidId, 'cooking') || isServiceFullyBooked(maid.maidId, 'cleaning')) {
         Alert.alert('Service Unavailable', 'One or both services are fully booked on the selected days. Please select the available service.');
@@ -593,11 +684,14 @@ const BookMaid: React.FC = () => {
         return;
       }
     }
-    
     navigation.navigate('TimeSlotSelection', {
       maid,
       bookingType: bookingType!,
       service: serviceSelected as 'cooking' | 'cleaning' | 'both',
+      pricePerService:
+      typeof maid.pricePerService === 'number'
+        ? maid.pricePerService
+        : Number(maid.pricePerService),
     });
   };
 
@@ -633,6 +727,18 @@ const BookMaid: React.FC = () => {
     );
   };
 
+  // Helper: For a given maid, show only the allowed available days (if booking type is selected)
+  const getDisplayAvailableDays = (maid: Maid): string => {
+    if (bookingType && maid.timeAvailable) {
+      const allowedDays = getAllowedDays();
+      const available = allowedDays.filter(day => 
+        Array.isArray(maid.timeAvailable[day]) && maid.timeAvailable[day].length > 0
+      );
+      return available.join(', ');
+    }
+    return maid.timeAvailable ? Object.keys(maid.timeAvailable).join(', ') : 'Not specified';
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
@@ -648,6 +754,7 @@ const BookMaid: React.FC = () => {
         <TextInput
           style={styles.searchInput}
           placeholder="Enter location"
+          placeholderTextColor={theme.colors.onSurfaceVariant}
           value={location}
           onChangeText={setLocation}
         />
@@ -659,14 +766,14 @@ const BookMaid: React.FC = () => {
               onPress={() => setBookingType(1)}
               style={styles.typeButton}
             >
-              Weekly 1-3-5
+              M - W - F
             </Button>
             <Button 
               mode={bookingType === 2 ? 'contained' : 'outlined'} 
               onPress={() => setBookingType(2)}
               style={styles.typeButton}
             >
-              Weekly 2-4-6
+              T - Th - S
             </Button>
             <Button 
               mode={bookingType === 3 ? 'contained' : 'outlined'} 
@@ -721,7 +828,7 @@ const BookMaid: React.FC = () => {
                     </Text>
                     <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
                       {maid.pricePerService
-                        ? `Cleaning: ₹${maid.pricePerService.cleaning || 'N/A'} | Cooking: ₹${maid.pricePerService.cooking || 'N/A'}`
+                        ? `Cleaning: ₹${maid.pricePerService || 'N/A'} | Cooking: ₹${maid.pricePerService || 'N/A'}`
                         : 'Price: Not specified'
                       }
                     </Text>
@@ -729,7 +836,7 @@ const BookMaid: React.FC = () => {
                       Contact: {maid.contact}
                     </Text>
                     <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
-                      Available: {maid.timeAvailable ? Object.keys(maid.timeAvailable).join(', ') : 'Not specified'}
+                      Available: {getDisplayAvailableDays(maid)}
                     </Text>
                     {renderServiceButtons(maid)}
                     {allFullyBooked && (
@@ -770,13 +877,14 @@ const styles = StyleSheet.create({
   searchContainer: { padding: 16 },
   searchInput: { 
     borderBottomWidth: 1,
+    color: '#ccc',
     borderBottomColor: '#ccc',
     marginBottom: 12,
     height: 40,
     paddingHorizontal: 8,
   },
-  typeSelector: { marginBottom: 12 },
-  typeSelectorLabel: { marginBottom: 4, fontSize: 16 },
+  typeSelector: { marginBottom: 15 },
+  typeSelectorLabel: { marginBottom: 16, fontSize: 16 },
   typeOptions: { flexDirection: 'row', justifyContent: 'space-between' },
   typeButton: { flex: 1, marginHorizontal: 4 },
   searchButton: { marginTop: 8 },

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-import { Text, Button, Card, Avatar, Divider, useTheme } from 'react-native-paper';
+import { Text, Button, Card, Avatar, Divider, IconButton, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import { RouteProp } from '@react-navigation/native';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -19,39 +19,69 @@ interface HomeScreenProps {
 type HomeScreenNavigationProp = StackNavigationProp<HomeStackParamList, 'Home'>;
 
 const HomeScreen = ({ route }: HomeScreenProps) => {
-  //const { userName, email } = route.params;
   const { user, logout } = useAuth();
   const userName = user?.name || '';
   const email = user?.email || '';
   const photoUrl = user?.photoUrl || '';
   const theme = useTheme();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [showBookings, setShowBookings] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
+
+  const fetchBookings = async () => {
+    try {
+      const storedToken = await user?.token; // Get token before request
+      const response = await axios.get(
+        'https://maid-in-india-nglj.onrender.com/api/maid/bookings',
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${storedToken}`,
+          },
+        }
+      );
+      console.log('API Response:', response.data);
+      setBookings(response.data);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const storedToken = await user?.token; // Get token before request
-
-        const response = await axios.get(
-          'https://maid-in-india-nglj.onrender.com/api/maid/bookings',
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${storedToken}`,
-            },
-          }
-        );
-        console.log('API Response:', response.data);
-        setBookings(response.data);
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
-      }
-    };
-
-    fetchBookings();
+    // Optionally, you can fetch bookings on mount or keep it manual only.
+    // fetchBookings();
   }, []);
+
+  const handleToggleBookings = async () => {
+    // Refresh bookings list every time the button is clicked
+    await fetchBookings();
+    setShowBookings((prev) => !prev);
+  };
+
   const handleLogout = async () => {
     await logout();
+  };
+
+  // New function to handle cancel subscription
+  const handleCancelSubscription = async (bookingId: number) => {
+    try {
+      const storedToken = user?.token;
+      const response = await axios.post(
+        'https://maid-in-india-nglj.onrender.com/api/maid/cancel-booking',
+        { bookingId },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${storedToken}`,
+          },
+        }
+      );
+      console.log('Cancel subscription response:', response.data);
+      // Optionally refresh bookings after cancellation
+      await fetchBookings();
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+    }
   };
 
   return (
@@ -105,59 +135,80 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
           <Card.Title title="Recent Activity" titleStyle={{ color: theme.colors.onBackground }} />
           <Divider />
           <Card.Content style={styles.activityCardContent}>
-            <Text style={[styles.activityText, { color: theme.colors.onBackground }]}>You signed in just now</Text>
+            <Text style={[styles.activityText, { color: theme.colors.onBackground }]}>
+              You signed in just now
+            </Text>
           </Card.Content>
         </Card>
+
         <Card style={styles.activityCard}>
-
-          <Card.Title title="Bookings" titleStyle={{ color: theme.colors.onBackground }} />
+          <Card.Title
+            title="Bookings"
+            titleStyle={{ color: theme.colors.onBackground }}
+            right={(props) => (
+              <IconButton
+                {...props}
+                icon={showBookings ? 'chevron-up' : 'chevron-down'}
+                onPress={handleToggleBookings}
+              />
+            )}
+          />
           <Divider />
-          <Card.Content style={styles.activityCardContent}>
-            {bookings.map((booking: Booking) => (
-              <Card key={booking.BookingId} style={styles.bookingCard}>
-                <Card.Content>
-                  <View style={styles.bookingRow}>
-                    <Text style={styles.bookingText}>
-                      <Text style={styles.boldText}>Booking ID:</Text> {booking.BookingId}
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                      <Text style={styles.boldText}>Maid:</Text> {booking.maidId}
-                    </Text>
-                  </View>
-
-                  {(Object.entries(booking.slot) as [string, string][]).map(([day, time]) => (
-                    <View key={day} style={styles.slotRow}>
-                      <Text style={[styles.slotDay, { color: theme.colors.onSurfaceVariant }]}>
-                        {day}:
-                      </Text>
-                      <Text style={[styles.slotTime, { color: theme.colors.onSurfaceVariant }]}>
-                        {time}
-                      </Text>
-
-                    </View>
-                  ))}
-                  {booking.paymentStatus ? (
-                    booking.feedback ? (
-                      <View style={styles.feedbackContainer}>
-                        <Text style={styles.feedbackLabel}>Your Feedback:</Text>
-                        <Text style={styles.feedbackText}>{booking.feedback}</Text>
+          {showBookings && (
+            <Card.Content style={styles.activityCardContent}>
+              {bookings.length > 0 ? (
+                bookings.map((booking: Booking) => (
+                  <Card key={booking.BookingId} style={styles.bookingCard}>
+                    <Card.Content>
+                      <View style={styles.bookingRow}>
+                        <Text style={styles.bookingText}>
+                          <Text style={styles.boldText}>Booking ID:</Text> {booking.BookingId}
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          <Text style={styles.boldText}>Maid:</Text> {booking.maidId}
+                        </Text>
                       </View>
-                    ) : (
-                      <Button
-                        mode="contained"
-                        onPress={() =>
-                          navigation.navigate('Feedback', { bookingId: booking.BookingId })
-                        }
-                        style={{ marginTop: 8 }}
-                      >
-                        Give Feedback
-                      </Button>
-                    )
-                  ) : null}
-                </Card.Content>
-              </Card>
-            ))}
-          </Card.Content>
-
+                      {(Object.entries(booking.slot) as [string, string][]).map(([day, time]) => (
+                        <View key={day} style={styles.slotRow}>
+                          <Text style={[styles.slotDay, { color: theme.colors.onSurfaceVariant }]}>{day}:</Text>
+                          <Text style={[styles.slotTime, { color: theme.colors.onSurfaceVariant }]}>{time}</Text>
+                        </View>
+                      ))}
+                      {booking.paymentStatus && (
+                        <View style={styles.actionButtonsContainer}>
+                          {!booking.feedback && (
+                            <Button
+                              mode="contained"
+                              onPress={() =>
+                                navigation.navigate('Feedback', { bookingId: booking.BookingId })
+                              }
+                              style={{ marginTop: 8 }}
+                            >
+                              Give Feedback
+                            </Button>
+                          )}
+                          <Button
+                            mode="contained"
+                            onPress={() => handleCancelSubscription(booking.BookingId)}
+                            style={{ marginTop: 8, marginLeft: 8 }}
+                          >
+                            Cancel Subscription
+                          </Button>
+                        </View>
+                      )}
+                      {booking.paymentStatus && booking.feedback && (
+                        <View style={styles.feedbackContainer}>
+                          <Text style={styles.feedbackLabel}>Your Feedback:</Text>
+                          <Text style={styles.feedbackText}>{booking.feedback}</Text>
+                        </View>
+                      )}
+                    </Card.Content>
+                  </Card>
+                ))
+              ) : (
+                <Text style={styles.noBookingsText}>No bookings available</Text>
+              )}
+            </Card.Content>
+          )}
         </Card>
       </ScrollView>
     </View>
@@ -240,8 +291,8 @@ const styles = StyleSheet.create({
   bookingCard: {
     marginBottom: 12,
     borderRadius: 8,
-    elevation: 3, // Android shadow
-    backgroundColor: '#1e1e1e', // dark grey card background
+    elevation: 3,
+    backgroundColor: '#1e1e1e',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -256,24 +307,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'blue',
   },
-  maidText: {
-    fontSize: 14,
-    color: 'blue',
-  },
   boldText: {
     fontWeight: 'bold',
-  },
-  slotContainer: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'blue',
-  },
-  slotTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'blue',
-    marginBottom: 4,
   },
   slotRow: {
     flexDirection: 'row',
@@ -308,7 +343,12 @@ const styles = StyleSheet.create({
   feedbackText: {
     color: theme.colors.onSurfaceVariant,
   },
+  // New style for action buttons container
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
 });
 
 export default HomeScreen;
-

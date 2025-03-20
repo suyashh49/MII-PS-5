@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { Text, Button, Card, Divider, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
@@ -13,17 +13,48 @@ const CartCheckout = () => {
   const { user, logout } = useAuth();
   const theme = useTheme();
   const route = useRoute();
-  // Call useNavigation once at the top level with proper typing
   const navigation = useNavigation<HomeNavigationProp>();
-
-  const { bookingId, service, slot, type, cost } = route.params as { 
-    bookingId: number; 
-    service: 'cooking' | 'cleaning' | 'both'; 
-    slot: string; 
-    type: number; 
-    cost:number;
-  };
+  
+  // Define all state hooks at the top level of the component
   const [loading, setLoading] = useState(false);
+  const [cartReset, setCartReset] = useState(false);
+  const [cartData, setCartData] = useState<{
+    bookingId: number;
+    service: 'cooking' | 'cleaning' | 'both';
+    slot: string;
+    type: number;
+    pricePerService: number;
+    cost: number;
+  } | null>(null);
+  
+  // Use useEffect to process route params after component mounts
+  useEffect(() => {
+    if (route.params && !cartReset) {
+      const { bookingId, service, slot, type, pricePerService } = route.params as {
+        bookingId: number;
+        service: 'cooking' | 'cleaning' | 'both';
+        slot: string;
+        type: number;
+        pricePerService: number;
+      };
+      
+      // Calculate total cost based on booking type
+      const daysCount = type === 3 ? 30 : (type === 1 || type === 2 ? 12 : 1);
+      const cost = pricePerService * daysCount;
+      
+      setCartData({
+        bookingId,
+        service,
+        slot,
+        type,
+        pricePerService,
+        cost
+      });
+    } else {
+      setCartData(null);
+    }
+  }, [route.params, cartReset]);
+
   const token = user?.token;
 
   const handleLogout = async () => {
@@ -31,9 +62,16 @@ const CartCheckout = () => {
   };
 
   const handleConfirmPayment = async () => {
+    if (!cartData) return;
+    
     setLoading(true);
     try {
-      const requestData = { bookingId, service };
+      const requestData = { 
+        bookingId: cartData.bookingId, 
+        service: cartData.service, 
+        cost: cartData.cost 
+      };
+      
       await axios.post(
         'https://maid-in-india-nglj.onrender.com/api/maid/confirm-booking',
         requestData,
@@ -44,14 +82,19 @@ const CartCheckout = () => {
           },
         }
       );
+      
+      // Reset the cart
+      setCartReset(true);
+      
       Alert.alert('Success', 'Booking confirmed successfully!', [
         {
           text: 'OK',
-          onPress: () =>
+          onPress: () => {
             navigation.navigate('Home', {
               userName: user?.name || '',
               email: user?.email || '',
-            }),
+            });
+          },
         },
       ]);
     } catch (error: unknown) {
@@ -70,6 +113,25 @@ const CartCheckout = () => {
     }
   };
 
+  // Render empty cart view
+  if (!cartData) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No order found in your cart. Please add an order first.</Text>
+          <Button
+            mode="contained"
+            onPress={() => navigation.navigate('BookMaid')}
+            style={styles.goToOrderButton}
+          >
+            Go to Order
+          </Button>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Render cart with data
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
@@ -96,23 +158,23 @@ const CartCheckout = () => {
           <Card.Content>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Booking Id:</Text>
-              <Text style={styles.detailValue}>{bookingId}</Text>
+              <Text style={styles.detailValue}>{cartData.bookingId}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Service:</Text>
-              <Text style={styles.detailValue}>{service}</Text>
+              <Text style={styles.detailValue}>{cartData.service}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Slot:</Text>
-              <Text style={styles.detailValue}>{slot}</Text>
+              <Text style={styles.detailValue}>{cartData.slot}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Type:</Text>
-              <Text style={styles.detailValue}>{type}</Text>
+              <Text style={styles.detailValue}>{cartData.type}</Text>
             </View>
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Total Cost</Text>
-              <Text style={styles.detailValue}>{cost}</Text>
+              <Text style={styles.detailLabel}>Total Cost:</Text>
+              <Text style={styles.detailValue}>{cartData.cost}</Text>
             </View>
             <Button
               mode="contained"
@@ -179,6 +241,20 @@ const styles = StyleSheet.create({
     marginTop: 30,
     alignSelf: 'center',
     width: '80%',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  emptyText: {
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  goToOrderButton: {
+    width: '60%',
   },
 });
 

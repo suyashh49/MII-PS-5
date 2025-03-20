@@ -1,14 +1,20 @@
+
+
 import React, { useState } from 'react';
 import { View, Alert, StyleSheet, ScrollView } from 'react-native';
 import { Text, Button, useTheme, IconButton } from 'react-native-paper';
 import axios, { AxiosError } from 'axios';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, CommonActions } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BookingConfirmRequestData, BookStackParamList, ErrorResponse, Maid } from '../../types/index';
-import { useAuth } from '../../hooks/useAuth'; // Import your auth hook
-import BookStackNavigator from '../../navigation/BookStackNavigator';
+import { useAuth } from '../../hooks/useAuth';
 
-//type TimeSlotSelectionScreenNavigationProp = StackNavigationProp<BookStackParamList, 'TimeSlotSelection'>;
+type RouteParams = {
+  maid: Maid;
+  bookingType: number; // 1, 2, or 3
+  service: 'cooking' | 'cleaning' | 'both';
+  pricePerService: number;
+};
 
 const isAxiosError = (error: unknown): error is AxiosError =>
   typeof error === 'object' &&
@@ -16,21 +22,12 @@ const isAxiosError = (error: unknown): error is AxiosError =>
   'isAxiosError' in error &&
   Boolean((error as AxiosError).isAxiosError);
 
-type RouteParams = {
-  maid: Maid;
-  bookingType: number; // 1, 2, or 3
-  service: 'cooking' | 'cleaning' | 'both';
-};
-
-
-
 const TimeSlotSelection: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  //const internavigation = useNavigation<TimeSlotSelectionScreenNavigationProp>(); 
   const theme = useTheme();
-  const { user } = useAuth(); // Retrieve token from auth context
-  const { maid, bookingType, service } = route.params as RouteParams;
+  const { user } = useAuth();
+  const { maid, bookingType, service, pricePerService } = route.params as RouteParams;
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [bookingInProgress, setBookingInProgress] = useState<boolean>(false);
   const [storedToken, setStoredToken] = useState<string | null>(null);
@@ -66,8 +63,9 @@ const TimeSlotSelection: React.FC = () => {
         slot: selectedTime,
         type: bookingType,
         service: service,
+        pricePerservice: pricePerService,
       };
-      console.log(service);
+      
       const response = await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/book', requestData, {
         headers: { 
           'Content-Type': 'application/json',
@@ -75,12 +73,25 @@ const TimeSlotSelection: React.FC = () => {
         },
       });
       
-      navigation.getParent()?.navigate('CartCheckout', {
-        bookingId: response.data.BookingId,
-        service: service,
-        slot: selectedTime,
-        type: bookingType,
-      });
+      // Use CommonActions to reset the navigation state and navigate to CartCheckout
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 1,
+          routes: [
+            { name: 'BookMaid' },  // This resets BookMaid as the base screen
+            { 
+              name: 'CartCheckout', 
+              params: {
+                bookingId: response.data.BookingId,
+                service: service,
+                slot: selectedTime,
+                type: bookingType,
+                pricePerService: pricePerService,
+              }
+            },
+          ],
+        })
+      );
     } catch (error: unknown) {
       console.error('Error booking maid:', error);
       if (isAxiosError(error)) {
@@ -91,28 +102,6 @@ const TimeSlotSelection: React.FC = () => {
       }
     } finally {
       setBookingInProgress(false);
-    }
-  };
-
-  const confirmBooking = async (bookingId: number) => {
-    try {
-      const requestData = { bookingId, service };
-      await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/confirm-booking', requestData, {
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokenAuth}`  // Include token here too
-        },
-      });
-      Alert.alert('Success', 'Booking confirmed successfully!');
-      navigation.goBack();
-    } catch (error: unknown) {
-      console.error('Error confirming booking:', error);
-      if (isAxiosError(error)) {
-        const axiosError = error as AxiosError<ErrorResponse>;
-        Alert.alert('Confirmation Failed', axiosError.response?.data?.message || 'Failed to confirm booking.');
-      } else {
-        Alert.alert('Confirmation Failed', 'Failed to confirm booking. Please try again.');
-      }
     }
   };
 
