@@ -1,23 +1,81 @@
-import React from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
-import { Text, Button, Card, Avatar, Divider, useTheme } from 'react-native-paper';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, View, ScrollView, Alert } from 'react-native';
+import { Text, Button, Card, Divider, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
+import axios, { AxiosError } from 'axios';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { RootStackParamList, ErrorResponse } from '../../types';
+import { StackNavigationProp } from '@react-navigation/stack';
+
+type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 const CartCheckout = () => {
   const { user, logout } = useAuth();
-  const photoUrl = user?.photoUrl || '';
   const theme = useTheme();
+  const route = useRoute();
+  // Call useNavigation once at the top level with proper typing
+  const navigation = useNavigation<HomeNavigationProp>();
+
+  const { bookingId, service, slot, type } = route.params as { 
+    bookingId: number; 
+    service: 'cooking' | 'cleaning' | 'both'; 
+    slot: string; 
+    type: number; 
+  };
+  const [loading, setLoading] = useState(false);
+  const token = user?.token;
 
   const handleLogout = async () => {
     await logout();
   };
 
+  const handleConfirmPayment = async () => {
+    setLoading(true);
+    try {
+      const requestData = { bookingId, service };
+      await axios.post(
+        'https://maid-in-india-nglj.onrender.com/api/maid/confirm-booking',
+        requestData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+      Alert.alert('Success', 'Booking confirmed successfully!', [
+        {
+          text: 'OK',
+          onPress: () =>
+            navigation.navigate('Home', {
+              userName: user?.name || '',
+              email: user?.email || '',
+            }),
+        },
+      ]);
+    } catch (error: unknown) {
+      console.error('Error confirming booking:', error);
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<ErrorResponse>;
+        Alert.alert(
+          'Error',
+          axiosError.response?.data?.message || 'Failed to confirm booking.'
+        );
+      } else {
+        Alert.alert('Error', 'Failed to confirm booking.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
+      {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
-        <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>Your Cart</Text>
-        <Button 
-          mode="outlined" 
+        <Text style={[styles.headerTitle, { color: theme.colors.onPrimary }]}>Your Cart</Text>
+        <Button
+          mode="outlined"
           onPress={handleLogout}
           style={styles.logoutButton}
           labelStyle={{ color: theme.colors.onPrimary }}
@@ -26,93 +84,96 @@ const CartCheckout = () => {
         </Button>
       </View>
 
-      <ScrollView style={styles.content}>
-       
-
-        <Card style={styles.infoCard}>
-          <Card.Title title="Cart Items" titleStyle={{ color: theme.colors.onBackground }} />
+      {/* Main Content */}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Card style={styles.card}>
+          <Card.Title
+            title="Cart Checkout"
+            titleStyle={[styles.cardTitle, { color: theme.colors.primary }]}
+          />
           <Divider />
-          <Card.Content style={styles.infoCardContent}>
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Item 1:</Text>
-              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>Details</Text>
+          <Card.Content>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Booking Id:</Text>
+              <Text style={styles.detailValue}>{bookingId}</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Item 2:</Text>
-              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>Details</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Service:</Text>
+              <Text style={styles.detailValue}>{service}</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Item 3:</Text>
-              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>Details</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Slot:</Text>
+              <Text style={styles.detailValue}>{slot}</Text>
             </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Type:</Text>
+              <Text style={styles.detailValue}>{type}</Text>
+            </View>
+            <Button
+              mode="contained"
+              onPress={handleConfirmPayment}
+              loading={loading}
+              style={styles.confirmButton}
+            >
+              Confirm Payment
+            </Button>
           </Card.Content>
         </Card>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 24,
+    paddingHorizontal: 24,
     paddingTop: 60,
+    paddingBottom: 20,
+    elevation: 4,
   },
-  welcomeText: {
+  headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
   },
   logoutButton: {
     borderColor: '#ffffff',
   },
-  content: {
-    flex: 1,
+  scrollContent: {
     padding: 16,
+    alignItems: 'center',
   },
-  profileCard: {
-    marginBottom: 16,
+  card: {
+    width: '100%',
     borderRadius: 12,
     elevation: 2,
   },
-  profileCardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  userInfo: {
-    marginLeft: 16,
-  },
-  userName: {
-    fontSize: 20,
+  cardTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
   },
-  userEmail: {
-    fontSize: 14,
-  },
-  infoCard: {
-    marginBottom: 16,
-    borderRadius: 12,
-    elevation: 2,
-  },
-  infoCardContent: {
-    padding: 16,
-  },
-  infoRow: {
+  detailRow: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginVertical: 10,
   },
-  infoLabel: {
-    width: 100,
-    fontSize: 16,
+  detailLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 0.5,
   },
-  infoValue: {
-    flex: 1,
-    fontSize: 16,
+  detailValue: {
+    fontSize: 18,
+    flex: 0.5,
+  },
+  confirmButton: {
+    marginTop: 30,
+    alignSelf: 'center',
+    width: '80%',
   },
 });
 

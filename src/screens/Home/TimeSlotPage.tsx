@@ -3,8 +3,12 @@ import { View, Alert, StyleSheet, ScrollView } from 'react-native';
 import { Text, Button, useTheme, IconButton } from 'react-native-paper';
 import axios, { AxiosError } from 'axios';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { BookingConfirmRequestData, ErrorResponse, Maid } from '../../types/index';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { BookingConfirmRequestData, BookStackParamList, ErrorResponse, Maid } from '../../types/index';
 import { useAuth } from '../../hooks/useAuth'; // Import your auth hook
+import BookStackNavigator from '../../navigation/BookStackNavigator';
+
+//type TimeSlotSelectionScreenNavigationProp = StackNavigationProp<BookStackParamList, 'TimeSlotSelection'>;
 
 const isAxiosError = (error: unknown): error is AxiosError =>
   typeof error === 'object' &&
@@ -18,9 +22,12 @@ type RouteParams = {
   service: 'cooking' | 'cleaning' | 'both';
 };
 
+
+
 const TimeSlotSelection: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation();
+  //const internavigation = useNavigation<TimeSlotSelectionScreenNavigationProp>(); 
   const theme = useTheme();
   const { user } = useAuth(); // Retrieve token from auth context
   const { maid, bookingType, service } = route.params as RouteParams;
@@ -58,22 +65,22 @@ const TimeSlotSelection: React.FC = () => {
         maidId: maid.maidId,
         slot: selectedTime,
         type: bookingType,
-        service,
+        service: service,
       };
+      console.log(service);
       const response = await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/book', requestData, {
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokenAuth}`  // Include the token here
+          'Authorization': `Bearer ${tokenAuth}`  
         },
       });
-      Alert.alert(
-        'Booking Request Submitted',
-        'Please confirm your booking by making the payment.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Confirm Payment', onPress: () => confirmBooking(response.data.BookingId) },
-        ]
-      );
+      
+      navigation.getParent()?.navigate('CartCheckout', {
+        bookingId: response.data.BookingId,
+        service: service,
+        slot: selectedTime,
+        type: bookingType,
+      });
     } catch (error: unknown) {
       console.error('Error booking maid:', error);
       if (isAxiosError(error)) {
@@ -89,7 +96,7 @@ const TimeSlotSelection: React.FC = () => {
 
   const confirmBooking = async (bookingId: number) => {
     try {
-      const requestData = { bookingId };
+      const requestData = { bookingId, service };
       await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/confirm-booking', requestData, {
         headers: { 
           'Content-Type': 'application/json',

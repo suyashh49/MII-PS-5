@@ -9,7 +9,7 @@ export type RootStackParamList = {
     userName: string;
     email: string;
   };
-  Feedback: { bookingId: string };
+  Feedback: { bookingId: number, rating: number };
   MaidProfile: undefined;
   KYCDetailsMaid: {
     name: string;
@@ -22,15 +22,28 @@ export type RootStackParamList = {
   };
   HomeMaid: { name: string; govtId: string | null; imageUrl: string | null };
   BookMaid: undefined; 
-  CartCheckout: undefined; 
+  CartCheckout: {
+    bookingId: number;
+    service: 'cooking' | 'cleaning' | 'both';
+  } ;
   
+};
+
+export type HomeStackParamList = {
+  Home: {
+    userName: string;
+    email: string;
+  };
+  Feedback: {
+    bookingId: number;
+  };
 };
 
 export type BookStackParamList = {
   BookMaid: undefined;
   TimeSlotSelection: {
     maid: Maid;
-    bookingType: number; // Make sure this is non-nullable; adjust your logic if needed.
+    bookingType: number; 
     service: 'cooking' | 'cleaning' | 'both';
   };
   Feedback: undefined;
@@ -85,6 +98,7 @@ export type BookStackParamList = {
     BookingId: number;
     maidId: number;
     userId: number;
+    feedback?: number;
     slot: {
       [key: string]: string;
     };
@@ -92,6 +106,11 @@ export type BookStackParamList = {
     paymentStatus: boolean;
     createdAt: string;
     updatedAt: string;
+    cost: number;
+    type: number;
+    userName: string;
+    userContact: string;
+    userLocation: string;
   }
   
   export interface SlotData {
@@ -107,6 +126,8 @@ export type BookStackParamList = {
   export interface BookRequestData {
     maidId: number;
     slot: SlotData;
+    type: number;
+    service: 'cooking' | 'cleaning' | 'both';
   }
   
   export interface BookingConfirmRequestData {

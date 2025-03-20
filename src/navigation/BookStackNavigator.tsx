@@ -22,14 +22,16 @@ const BookStackNavigator = () => {
       <Stack.Screen
         name="BookMaid"
         component={BookMaid}
-        options={{ title: 'Book a Maid1/Cook', headerShown: false }}
+        options={{ title: 'Book a Maid/Cook', headerShown: false }}
       />
       <Stack.Screen
         name="TimeSlotSelection"
         component={TimeSlotSelection}
         options={{ title: 'Select Time Slot', headerShown: false }}
       />
-      <Stack.Screen name="Feedback" component={Feedback} options={{ title: 'Feedback', headerShown: false }}/>
+      <Stack.Screen name="Feedback" 
+      component={Feedback} 
+      options={{ title: 'Feedback', headerShown: false }}/>
     </Stack.Navigator>
   );
 };

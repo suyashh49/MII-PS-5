@@ -6,6 +6,7 @@ import BookMaid from '../screens/Home/BookMaid';
 import CartCheckout from '../screens/Home/CartCheckout';
 import BookStackNavigator from './BookStackNavigator';
 import { useAuth } from '../hooks/useAuth';
+import HomeStackNavigator from './HomeStackNavigator';
 
 const Tab = createBottomTabNavigator();
 
@@ -53,7 +54,7 @@ const BottomTabNavigator = () => {
     >
       <Tab.Screen 
         name="Home" 
-        component={HomeScreenWrapper}
+        component={HomeStackNavigator}
         options={{ headerShown: false }}
       />
       <Tab.Screen name="BookMaid" component={BookStackNavigator} options={{ headerShown: false }}/>

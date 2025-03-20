@@ -23,12 +23,24 @@ const Feedback = () => {
     }
     setLoading(true);
     try {
-      const response = await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/feedback', {
-        bookingId, // send the booking id
+      await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/feedback', {
+        bookingId,
         feedback: feedbackText,
       });
-      Alert.alert('Success', 'Feedback submitted successfully.');
-      navigation.goBack();
+      Alert.alert(
+        'Success', 
+        'Feedback submitted successfully.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.goBack();
+              // You might want to trigger a refresh of the bookings list
+              // by passing a callback or using context/redux
+            }
+          }
+        ]
+      );
     } catch (error) {
       console.error('Error submitting feedback:', error);
       Alert.alert('Error', 'There was an error submitting your feedback.');
