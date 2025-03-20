@@ -16,11 +16,12 @@ const CartCheckout = () => {
   // Call useNavigation once at the top level with proper typing
   const navigation = useNavigation<HomeNavigationProp>();
 
-  const { bookingId, service, slot, type } = route.params as { 
+  const { bookingId, service, slot, type, cost } = route.params as { 
     bookingId: number; 
     service: 'cooking' | 'cleaning' | 'both'; 
     slot: string; 
     type: number; 
+    cost:number;
   };
   const [loading, setLoading] = useState(false);
   const token = user?.token;
@@ -108,6 +109,10 @@ const CartCheckout = () => {
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Type:</Text>
               <Text style={styles.detailValue}>{type}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Total Cost</Text>
+              <Text style={styles.detailValue}>{cost}</Text>
             </View>
             <Button
               mode="contained"
