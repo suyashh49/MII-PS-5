@@ -45,6 +45,7 @@ export type BookStackParamList = {
     maid: Maid;
     bookingType: number; 
     service: 'cooking' | 'cleaning' | 'both';
+    pricePerService: number;
   };
   Feedback: undefined;
 };
@@ -98,6 +99,8 @@ export type BookStackParamList = {
     BookingId: number;
     maidId: number;
     userId: number;
+    maidName: string;
+    maidContact: string;
     feedback?: number;
     slot: {
       [key: string]: string;

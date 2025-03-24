@@ -4,15 +4,9 @@ import { Text, Button, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
-import Svg, { Path } from 'react-native-svg';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
-
-const BroomIcon = ({ color }: { color: string }) => (
-    <Svg width="64" height="64" viewBox="0 0 24 24" fill={color}>
-      <Path d="M21.71,20.29l-4-4a1,1,0,0,0-1.42,0L14.34,18,6.41,10.07a1,1,0,0,0-1.42,0L3.29,11.77a1,1,0,0,0,0,1.42l7.93,7.93-1.71,1.71a1,1,0,0,0,0,1.42l4,4a1,1,0,0,0,1.42,0l1.71-1.71,7.93,7.93a1,1,0,0,0,1.42,0l1.71-1.71a1,1,0,0,0,0-1.42ZM5.83,12.24,7.24,10.83l6.93,6.93L12.76,19.17ZM19.17,22.76,17.76,21.34l6.93-6.93,1.41,1.41Z"/>
-    </Svg>
-  );
 
 const WelcomeScreen = () => {
   const theme = useTheme();
@@ -25,7 +19,7 @@ const WelcomeScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
-        <BroomIcon color={theme.colors.primary} />
+        <MaterialCommunityIcons name="broom" size={64} color={theme.colors.primary} />
       </View>
       
       <Text style={[styles.title, { color: theme.colors.onBackground }]}>

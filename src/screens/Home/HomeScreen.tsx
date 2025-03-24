@@ -124,10 +124,10 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
               <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Email:</Text>
               <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>{email}</Text>
             </View>
-            <View style={styles.infoRow}>
+            {/* <View style={styles.infoRow}>
               <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Account Type:</Text>
               <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>Google</Text>
-            </View>
+            </View> */}
           </Card.Content>
         </Card>
 
@@ -162,9 +162,9 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
                     <Card.Content>
                       <View style={styles.bookingRow}>
                         <Text style={styles.bookingText}>
-                          <Text style={styles.boldText}>Booking ID:</Text> {booking.BookingId}
+                          <Text style={styles.boldText}>Maid Name:</Text> {booking.maidName}
                           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                          <Text style={styles.boldText}>Maid:</Text> {booking.maidId}
+                          <Text style={styles.boldText}>Maid Contact:</Text> {booking.maidContact}
                         </Text>
                       </View>
                       {(Object.entries(booking.slot) as [string, string][]).map(([day, time]) => (
