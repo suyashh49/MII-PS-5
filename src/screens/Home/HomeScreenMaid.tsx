@@ -110,11 +110,12 @@ const HomeScreenMaid = () => {
   }, [bookings, generateCalendarItems]);
 
   // Render each calendar item
-  const renderItem = (item: { name: string; time: string; location: string }) => (
+  const renderItem = (item: { name: string; time: string; location: string; userContact: string}) => (
     <View style={styles.item}>
       <Text style={styles.itemText}>{item.name}</Text>
       <Text style={styles.itemText}>Time: {item.time}</Text>
-      <Text style={styles.itemText}>Location: {item.location}</Text>
+      <Text style={styles.itemText}>Location: {item.location ? item.location : 'Not provided'}</Text>
+      <Text style={styles.itemText}>Contact No.: {item.userContact}</Text>
     </View>
   );
 

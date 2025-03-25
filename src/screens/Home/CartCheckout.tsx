@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, View, ScrollView, Alert } from 'react-native';
-import { Text, Button, Card, Divider, useTheme } from 'react-native-paper';
+import { Text, Button, Card, Divider, useTheme, TextInput } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import axios, { AxiosError } from 'axios';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -10,11 +10,13 @@ import { StackNavigationProp } from '@react-navigation/stack';
 type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 const CartCheckout = () => {
+  const [address, setAddress] = useState('');
+  const [contact, setContact] = useState('');
   const { user, logout } = useAuth();
   const theme = useTheme();
   const route = useRoute();
   const navigation = useNavigation<HomeNavigationProp>();
-  
+
   // Define all state hooks at the top level of the component
   const [loading, setLoading] = useState(false);
   const [cartReset, setCartReset] = useState(false);
@@ -26,7 +28,7 @@ const CartCheckout = () => {
     pricePerService: number;
     cost: number;
   } | null>(null);
-  
+
   // Use useEffect to process route params after component mounts
   useEffect(() => {
     if (route.params && !cartReset) {
@@ -37,11 +39,11 @@ const CartCheckout = () => {
         type: number;
         pricePerService: number;
       };
-      
+
       // Calculate total cost based on booking type
       const daysCount = type === 3 ? 30 : (type === 1 || type === 2 ? 12 : 1);
       const cost = pricePerService * daysCount;
-      
+
       setCartData({
         bookingId,
         service,
@@ -63,15 +65,17 @@ const CartCheckout = () => {
 
   const handleConfirmPayment = async () => {
     if (!cartData) return;
-    
+
     setLoading(true);
     try {
-      const requestData = { 
-        bookingId: cartData.bookingId, 
-        service: cartData.service, 
-        cost: cartData.cost 
+      const requestData = {
+        bookingId: cartData.bookingId,
+        service: cartData.service,
+        cost: cartData.cost,
+        userLocation: address,
+        userContact: contact,
       };
-      
+
       await axios.post(
         'https://maid-in-india-nglj.onrender.com/api/maid/confirm-booking',
         requestData,
@@ -82,10 +86,10 @@ const CartCheckout = () => {
           },
         }
       );
-      
+
       // Reset the cart
       setCartReset(true);
-      
+
       Alert.alert('Success', 'Booking confirmed successfully!', [
         {
           text: 'OK',
@@ -176,6 +180,20 @@ const CartCheckout = () => {
               <Text style={styles.detailLabel}>Total Cost:</Text>
               <Text style={styles.detailValue}>{cartData.cost}</Text>
             </View>
+            <TextInput
+              label="Enter Address"
+              value={address}
+              onChangeText={setAddress}
+              mode="outlined"
+              style={{ marginVertical: 10 }}
+            />
+            <TextInput
+              label="Enter Contact Number"
+              value={contact}
+              onChangeText={setContact}
+              mode="outlined"
+              style={{ marginVertical: 10 }}
+            />
             <Button
               mode="contained"
               onPress={handleConfirmPayment}
