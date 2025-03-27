@@ -54,16 +54,16 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 8,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
   },
   subheader: {
     fontSize: 16,
     marginBottom: 32,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
   },
   card: {
     width: '100%',
-    borderRadius: 12,
+    borderRadius: 40,
     elevation: 2,
   },
   cardContent: {
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 4,
+    borderRadius: 24,
     borderWidth: 1,
     width: '100%',
   },

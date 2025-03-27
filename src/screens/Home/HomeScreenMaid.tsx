@@ -144,7 +144,7 @@ const HomeScreenMaid = () => {
         renderItem={renderItem}
         renderEmptyDate={() => (
           <View style={styles.emptyDate}>
-            <Text>You have no work scheduled for the day</Text>
+            <Text style={[styles.emptyText, { color: theme.colors.background }]}>You have no work scheduled for the day</Text>
           </View>
         )}
         rowHasChanged={(r1: { name: string }, r2: { name: string }) => r1.name !== r2.name}
@@ -173,6 +173,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
+  emptyText: {
+    fontSize: 15,
+  },
+
   logoutButton: {
     borderColor: '#ffffff',
   },

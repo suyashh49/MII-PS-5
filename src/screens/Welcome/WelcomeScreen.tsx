@@ -1,11 +1,13 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ImageBackground } from 'react-native';
 import { Text, Button, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+
+const heroImage = require('../../assets/hero_1.png');
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
 
 const WelcomeScreen = () => {
@@ -18,6 +20,11 @@ const WelcomeScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <ImageBackground
+        source={heroImage}
+        style={styles.backgroundImage}
+        resizeMode="contain"
+      ></ImageBackground>
       <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
         <MaterialCommunityIcons name="broom" size={64} color={theme.colors.primary} />
       </View>
@@ -45,6 +52,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
   },
+  backgroundImage: {
+    // This makes the image cover the entire screen
+    position: 'absolute',
+    top: 0,
+    left: 20,
+    right: 20,
+    bottom: 300,
+    width: '100%',
+    alignContent: 'flex-start',
+  },
   iconContainer: {
     marginBottom: 24,
     borderRadius: 50,
@@ -56,8 +73,10 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   button: {
-    width: '100%',
-    borderRadius: 30,
+    width: '90%',
+    borderRadius: 24,
+    //marginTop: 5,
+    paddingVertical: 4,
   },
   buttonLabel: {
     fontSize: 16,

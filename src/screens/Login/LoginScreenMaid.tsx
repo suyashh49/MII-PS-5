@@ -65,8 +65,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    fontSize: 20,
+    fontSize: 24,
     marginBottom: 20,
+    fontWeight: 'bold',
   },
   input: {
     borderBottomWidth: 1,
@@ -78,17 +79,20 @@ const styles = StyleSheet.create({
     marginTop: 32,
     width: "100%",
     marginBottom: 48,
+    alignItems: "center",
   },
   button: {
-    borderRadius: 8,
-    paddingVertical: 4,
-    elevation: 2,
+    width: '90%',
+    borderRadius: 30,
+    //marginTop: 5,
+    paddingVertical: 2,
   },
   buttonContent: {
     height: 50,
   },
   buttonLabel: {
     fontSize: 16,
-    fontWeight: "bold",
+    textTransform: 'none',
+    fontWeight: 'bold',
   },
 });

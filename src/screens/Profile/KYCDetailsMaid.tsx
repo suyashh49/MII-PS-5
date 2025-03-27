@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
-import { Text, Button, useTheme } from 'react-native-paper';
+import { Text, Button, Card, useTheme } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -8,14 +8,13 @@ import { RootStackParamList } from '../../types';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import theme from '../../config/theme';
 
 type KYCDetailsMaidNavigationProp = StackNavigationProp<RootStackParamList, 'KYCDetailsMaid'>;
 type KYCDetailsMaidRouteProp = RouteProp<RootStackParamList, 'KYCDetailsMaid'>;
 
 const KYCDetailsMaid = () => {
-  const [govtId, setgovtId] = useState<string | null>(null);
-  const [imageUrl, setimageUrl] = useState<string | null>(null);
+  const [govtId, setGovtId] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const navigation = useNavigation<KYCDetailsMaidNavigationProp>();
   const route = useRoute<KYCDetailsMaidRouteProp>();
   const { name, gender, location, timeAvailable, cooking, cleaning, pricePerService } = route.params;
@@ -28,7 +27,6 @@ const KYCDetailsMaid = () => {
       aspect: [4, 3],
       quality: 1,
     });
-
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setImage(result.assets[0].uri);
     }
@@ -36,23 +34,24 @@ const KYCDetailsMaid = () => {
 
   const handleNext = async () => {
     try {
-      //
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.put('https://maid-in-india-nglj.onrender.com/api/maid/profile', {
-        name,
-        govtId,
-        imageUrl,
-        gender,
-        location,
-        timeAvailable,
-        cooking,
-        cleaning,
-        pricePerService,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axios.put(
+        'https://maid-in-india-nglj.onrender.com/api/maid/profile',
+        {
+          name,
+          govtId,
+          imageUrl,
+          gender,
+          location,
+          timeAvailable,
+          cooking,
+          cleaning,
+          pricePerService,
         },
-      });
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       alert('Profile created successfully');
       navigation.navigate('HomeMaid', { name, govtId, imageUrl });
     } catch (error) {
@@ -63,61 +62,64 @@ const KYCDetailsMaid = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {/* Fixed header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+      {/* Consistent header */}
+      <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => navigation.navigate('MaidProfile')}
         >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onBackground} />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
-        <Text variant="headlineMedium" style={[styles.title, { color: theme.colors.onBackground }]}>
+        <Text style={[styles.headerTitle, { color: theme.colors.onPrimary }]}>
           KYC Verification
         </Text>
       </View>
-      
-      {/* Scrollable content */}
-      <ScrollView 
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.content}>
-          <Text style={[styles.label, { color: theme.colors.onBackground }]}>Upload Government ID Photo</Text>
-          <Button
-            mode="contained"
-            onPress={() => pickImage(setgovtId)}
-            style={styles.button}
-            contentStyle={styles.buttonContent}
-            labelStyle={styles.buttonLabel}
-          >
-            {govtId ? 'Change Photo' : 'Upload Photo'}
-          </Button>
-          {govtId && <Image source={{ uri: govtId }} style={styles.image} />}
-          <Text style={[styles.label, { color: theme.colors.onBackground }]}>Upload Your Photo</Text>
-          <Button
-            mode="contained"
-            onPress={() => pickImage(setimageUrl)}
-            style={styles.button}
-            contentStyle={styles.buttonContent}
-            labelStyle={styles.buttonLabel}
-          >
-            {imageUrl ? 'Change Photo' : 'Upload Photo'}
-          </Button>
-          {imageUrl && <Image source={{ uri: imageUrl }} style={styles.image} />}
-          <Button
-            mode="contained"
-            onPress={handleNext}
-            style={styles.nextButton}
-            contentStyle={styles.buttonContent}
-            labelStyle={styles.buttonLabel}
-          >
-            Next
-          </Button>
-        </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text style={[styles.label, { color: theme.colors.onBackground, textAlign: 'center' }]}>
+              Government ID
+            </Text>
+            <Button
+              mode="contained"
+              onPress={() => pickImage(setGovtId)}
+              style={styles.button}
+              contentStyle={styles.buttonContent}
+              labelStyle={styles.buttonLabel}
+            >
+              {govtId ? 'Change Photo' : 'Upload Photo'}
+            </Button>
+            {govtId && <Image source={{ uri: govtId }} style={styles.image} />}
+            
+            <Text style={[styles.label, { color: theme.colors.onBackground, marginTop: 16, textAlign: 'center' }]}>
+              Profile Picture
+            </Text>
+            <Button
+              mode="contained"
+              onPress={() => pickImage(setImageUrl)}
+              style={styles.button}
+              contentStyle={styles.buttonContent}
+              labelStyle={styles.buttonLabel}
+            >
+              {imageUrl ? 'Change Photo' : 'Upload Photo'}
+            </Button>
+            {imageUrl && <Image source={{ uri: imageUrl }} style={styles.image} />}
+          </Card.Content>
+        </Card>
+        <Button
+          mode="contained"
+          onPress={handleNext}
+          style={styles.nextButton}
+          contentStyle={styles.buttonContent}
+          labelStyle={styles.buttonLabel}
+        >
+          Next
+        </Button>
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -126,50 +128,44 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 40,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    width: '100%',
-    backgroundColor: theme.colors.background,
-    zIndex: 1,
-    elevation: 3, // Android shadow
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    padding: 24,
+    paddingTop: 60,
   },
   backButton: {
-    paddingRight: 20,
+    paddingRight: 2,
   },
-  title: {
+  headerTitle: {
     fontSize: 24,
     flex: 1,
     textAlign: 'center',
-    marginRight: 24, // To balance with the back button width
+    fontWeight: 'bold',
   },
   scrollContainer: {
-    flexGrow: 1,
+    padding: 16,
+    marginTop: 10,
+    paddingBottom: 30,
   },
-  content: {
-    alignItems: 'center',
-    padding: 100,
-    paddingTop: 120,
+  card: {
+    borderRadius: 12,
+    elevation: 2,
+    marginBottom: 16,
   },
   label: {
     fontSize: 16,
-    marginVertical: 10,
+    marginVertical: 8,
   },
   button: {
-    borderRadius: 8,
-    paddingVertical: 4,
-    elevation: 2,
-    width: '80%',
+    width: '90%',
+    borderRadius: 30,
+    marginVertical: 8,
+    alignSelf: 'center',
   },
   buttonContent: {
     height: 50,
   },
   buttonLabel: {
     fontSize: 16,
+    textTransform: 'none',
     fontWeight: 'bold',
   },
   image: {
@@ -177,17 +173,13 @@ const styles = StyleSheet.create({
     height: 200,
     marginVertical: 10,
     borderRadius: 8,
+    alignSelf: 'center',
   },
   nextButton: {
-    marginTop: 40,
-    marginBottom: 20,
-    width: '40%',
-    borderRadius: 8,
-    paddingVertical: 4,
-    elevation: 2,
-    //marginTop: 20,
-    //width: '100%',
-    //marginBottom: 20,
+    width: '90%',
+    borderRadius: 30,
+    marginTop: 12,
+    alignSelf: 'center',
   },
 });
 

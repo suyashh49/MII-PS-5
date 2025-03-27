@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     marginBottom: 20,
+    fontWeight: 'bold',
   },
   input: {
     borderBottomWidth: 1,
@@ -97,16 +98,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    marginTop: 20,
-    borderRadius: 8,
-    paddingVertical: 4,
-    elevation: 2,
+    width: '90%',
+    borderRadius: 30,
+    marginTop: 32,
+    marginBottom: 48,
+    paddingVertical: 2,
   },
   buttonContent: {
     height: 50,
   },
   buttonLabel: {
     fontSize: 16,
+    textTransform: 'none',
     fontWeight: 'bold',
   },
 });
