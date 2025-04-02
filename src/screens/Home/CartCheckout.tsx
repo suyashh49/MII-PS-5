@@ -27,11 +27,13 @@ const CartCheckout = () => {
     type: number;
     pricePerService: number;
     cost: number;
+    name: string;
   } | null>(null);
 
   // Use useEffect to process route params after component mounts
   useEffect(() => {
     if (route.params && !cartReset) {
+      // Extract parameters. If a maid object is passed, use its name.
       const { bookingId, service, slot, type, pricePerService } = route.params as {
         bookingId: number;
         service: 'cooking' | 'cleaning' | 'both';
@@ -39,6 +41,8 @@ const CartCheckout = () => {
         type: number;
         pricePerService: number;
       };
+      // Use the maid's name if available; otherwise fall back to a provided name property.
+      const maidName = (route.params as any).maid?.name || (route.params as any).name || 'Unknown Maid';
 
       // Calculate total cost based on booking type
       const daysCount = type === 3 ? 30 : (type === 1 || type === 2 ? 12 : 1);
@@ -50,7 +54,8 @@ const CartCheckout = () => {
         slot,
         type,
         pricePerService,
-        cost
+        cost,
+        name: maidName
       });
     } else {
       setCartData(null);
@@ -135,6 +140,14 @@ const CartCheckout = () => {
     );
   }
 
+  // Helper to convert booking type number to display string.
+  const getTypeDisplay = (type: number): string => {
+    if (type === 1) return 'M-W-F';
+    if (type === 2) return 'T-Th-S';
+    if (type === 3) return 'Daily';
+    return 'Unknown';
+  };
+
   // Render cart with data
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
@@ -164,6 +177,10 @@ const CartCheckout = () => {
               <Text style={styles.detailLabel}>Booking Id:</Text>
               <Text style={styles.detailValue}>{cartData.bookingId}</Text>
             </View>
+            {/* <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Name:</Text>
+              <Text style={styles.detailValue}>{cartData.name}</Text>
+            </View> */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Service:</Text>
               <Text style={styles.detailValue}>{cartData.service}</Text>
@@ -174,11 +191,11 @@ const CartCheckout = () => {
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Type:</Text>
-              <Text style={styles.detailValue}>{cartData.type}</Text>
+              <Text style={styles.detailValue}>{getTypeDisplay(cartData.type)}</Text>
             </View>
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Total Cost:</Text>
-              <Text style={styles.detailValue}>{cartData.cost}</Text>
+              <Text style={styles.detailLabel}>Cost Per Month:</Text>
+              <Text style={styles.detailValue}>{cartData.cost}/- INR</Text>
             </View>
             <TextInput
               label="Enter Address"

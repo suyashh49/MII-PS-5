@@ -46,6 +46,7 @@ export type BookStackParamList = {
     bookingType: number; 
     service: 'cooking' | 'cleaning' | 'both';
     pricePerService: number;
+    name: string;
   };
   Feedback: undefined;
 };

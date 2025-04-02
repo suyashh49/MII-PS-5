@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useNavigation, RouteProp, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
+import theme from '../../config/theme';
 
 type FeedbackRouteProp = RouteProp<RootStackParamList, 'Feedback'>;
 
@@ -53,7 +54,6 @@ const Feedback = () => {
             text: 'OK',
             onPress: () => {
               navigation.goBack();
-              // Optionally trigger a refresh of the booking list here
             }
           }
         ]
@@ -66,7 +66,7 @@ const Feedback = () => {
     }
   };
 
-  // Render 5 star icons. A filled star (using 'star') is shown if the current rating is at least the star's index.
+  // Render 5 star icons. A filled star is shown if the current rating is at least the star's index.
   const renderStars = () => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -88,10 +88,29 @@ const Feedback = () => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+        <IconButton
+          icon="arrow-left"
+          iconColor={theme.colors.onPrimary}
+          size={28}
+          onPress={() => navigation.goBack()}
+        />
+        <Title style={[styles.headerTitle, { color: theme.colors.onPrimary }]}>
+          Feedback
+        </Title>
+      </View>
+
       <View style={styles.content}>
-        <Title style={[styles.title, { color: 'blue' }]}>Give Feedback</Title>
-        <Text style={[styles.label, { color: 'blue' }]}>Booking ID: {bookingId}</Text>
-        <Text style={[styles.label, { color: 'blue' }]}>Your Rating:</Text>
+        {/* <Title style={[styles.title, { color: theme.colors.primary }]}>
+          Give Feedback for {bookingId}
+        </Title> */}
+        {/* <Text style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>
+          Booking ID: {bookingId}
+        </Text> */}
+        <Text style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>
+          Your Rating:
+        </Text>
         {renderStars()}
         <TextInput
           label="Your Feedback"
@@ -102,7 +121,7 @@ const Feedback = () => {
           multiline
           numberOfLines={4}
           placeholder="Enter your feedback here..."
-          placeholderTextColor="grey"
+          placeholderTextColor={theme.colors.onSurfaceVariant}
         />
         <Button
           mode="contained"
@@ -120,6 +139,20 @@ const Feedback = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingBottom: 12,
+    elevation: 4,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    flex: 0.85,
+    textAlign: 'center',
   },
   content: {
     padding: 16,
@@ -142,7 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   input: {
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.surface,
     marginBottom: 16,
   },
   button: {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { Text, Button, Card, Avatar, Divider, IconButton, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import { RouteProp } from '@react-navigation/native';
@@ -26,6 +26,8 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const theme = useTheme();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [showBookings, setShowBookings] = useState(false);
+  const [recentActivity, setRecentActivity] = useState<string>('You signed in just now');
+  const [showActivity, setShowActivity] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   const fetchBookings = async () => {
@@ -62,8 +64,8 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
     await logout();
   };
 
-  // New function to handle cancel subscription
-  const handleCancelSubscription = async (bookingId: number) => {
+  // Modified function to handle cancel subscription and update recent activity
+  const handleCancelSubscription = async (bookingId: number, booking: Booking) => {
     try {
       const storedToken = user?.token;
       const response = await axios.post(
@@ -77,17 +79,69 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
         }
       );
       console.log('Cancel subscription response:', response.data);
-      // Optionally refresh bookings after cancellation
+
+      // Alert pop-up confirming cancellation
+      Alert.alert(
+        'Booking Cancelled',
+        'Your booking has been cancelled successfully.',
+        [{ text: 'OK' }]
+      );
+
+      // Update recent activity with cancellation details
+      setRecentActivity(`Cancelled booking for ${booking.maidName}.`);
+
+      // Optionally, refresh bookings after cancellation
       await fetchBookings();
     } catch (error) {
       console.error('Error cancelling subscription:', error);
     }
   };
 
+  // Modified groupSlots function:
+  // Compute all possible groupings, then if the "Daily" group qualifies,
+  // return only that grouping; otherwise, return all groups.
+  const groupSlots = (slot: { [day: string]: string }): { group: string; time: string }[] => {
+    const groups: { [group: string]: string[] } = {
+      'M-W-F': ['Monday', 'Wednesday', 'Friday'],
+      'T-Th-S': ['Tuesday', 'Thursday', 'Saturday'],
+      'Daily': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    };
+
+    const result: { group: string; time: string }[] = [];
+
+    for (const group in groups) {
+      const requiredDays = groups[group];
+
+      if (group === 'Daily') {
+        // For daily group, require a time for every day and they must all be the same.
+        const allDaysHaveTime = requiredDays.every(day => slot[day] && slot[day].trim() !== '');
+        if (allDaysHaveTime) {
+          const uniqueTimes = Array.from(new Set(requiredDays.map(day => slot[day])));
+          if (uniqueTimes.length === 1) {
+            result.push({ group, time: uniqueTimes[0] });
+          }
+        }
+      } else {
+        // For other groups, collect times (non-empty) from the given days.
+        const times = requiredDays
+          .map(day => slot[day])
+          .filter((time) => time !== undefined && time.trim() !== '');
+        if (times.length > 0) {
+          const uniqueTimes = Array.from(new Set(times));
+          const displayTime = uniqueTimes.length === 1 ? uniqueTimes[0] : uniqueTimes.join(', ');
+          result.push({ group, time: displayTime });
+        }
+      }
+    }
+    // If the "Daily" group qualifies, ignore the other groups.
+    const dailyGroup = result.find(r => r.group === 'Daily');
+    return dailyGroup ? [dailyGroup] : result;
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
-        <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>Welcome back</Text>
+        <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>Welcome back!</Text>
         <Button
           mode="outlined"
           onPress={handleLogout}
@@ -124,21 +178,29 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
               <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Email:</Text>
               <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>{email}</Text>
             </View>
-            {/* <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Account Type:</Text>
-              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>Google</Text>
-            </View> */}
           </Card.Content>
         </Card>
 
         <Card style={styles.activityCard}>
-          <Card.Title title="Recent Activity" titleStyle={{ color: theme.colors.onBackground }} />
+          <Card.Title
+            title="Recent Activity"
+            titleStyle={{ color: theme.colors.onBackground }}
+            right={(props) => (
+              <IconButton
+                {...props}
+                icon={showActivity ? 'chevron-up' : 'chevron-down'}
+                onPress={() => setShowActivity(!showActivity)}
+              />
+            )}
+          />
           <Divider />
-          <Card.Content style={styles.activityCardContent}>
-            <Text style={[styles.activityText, { color: theme.colors.onBackground }]}>
-              You signed in just now
-            </Text>
-          </Card.Content>
+          {showActivity && (
+            <Card.Content style={styles.activityCardContent}>
+              <Text style={[styles.activityText, { color: theme.colors.onBackground }]}>
+                {recentActivity}
+              </Text>
+            </Card.Content>
+          )}
         </Card>
 
         <Card style={styles.activityCard}>
@@ -157,53 +219,71 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
           {showBookings && (
             <Card.Content style={styles.activityCardContent}>
               {bookings.length > 0 ? (
-                bookings.map((booking: Booking) => (
-                  <Card key={booking.BookingId} style={styles.bookingCard}>
-                    <Card.Content>
-                      <View style={styles.bookingRow}>
-                        <Text style={styles.bookingText}>
-                          <Text style={styles.boldText}>Maid Name:</Text> {booking.maidName}
-                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                          <Text style={styles.boldText}>Maid Contact:</Text> {booking.maidContact}
-                        </Text>
-                      </View>
-                      {(Object.entries(booking.slot) as [string, string][]).map(([day, time]) => (
-                        <View key={day} style={styles.slotRow}>
-                          <Text style={[styles.slotDay, { color: theme.colors.onSurfaceVariant }]}>{day}:</Text>
-                          <Text style={[styles.slotTime, { color: theme.colors.onSurfaceVariant }]}>{time}</Text>
+                bookings
+                  .slice()
+                  .sort((a, b) => b.BookingId - a.BookingId)
+                  .map((booking: Booking) => (
+                    <Card key={booking.BookingId} style={styles.bookingCard}>
+                      <Card.Content>
+                        <View style={styles.bookingRow}>
+                          <View style={styles.maidDetails}>
+                            <Text style={styles.boldText}>
+                              Name:{' '}
+                              <Text style={styles.maidcol}>{booking.maidName}</Text>
+                            </Text>
+                            <Text style={styles.boldText}>
+                              Mob:{' '}
+                              <Text style={styles.maidcol}>{booking.maidContact}</Text>
+                            </Text>
+                            <Text style={styles.boldText}>
+                              Service:{' '}
+                              <Text style={styles.maidcol}>{booking.service}</Text>
+                            </Text>
+                          </View>
+                          <View style={styles.bookingSlots}>
+                            {groupSlots(booking.slot).map(({ group, time }) => (
+                              <View key={group} style={styles.slotRow}>
+                                <Text style={[styles.slotDay, { color: theme.colors.onSurfaceVariant }]}>
+                                  {group}:
+                                </Text>
+                                <Text style={[styles.slotTime, { color: theme.colors.onSurfaceVariant }]}>
+                                  {time}
+                                </Text>
+                              </View>
+                            ))}
+                          </View>
                         </View>
-                      ))}
-                      {booking.paymentStatus && (
-                        <View style={styles.actionButtonsContainer}>
-                          {!booking.feedback && (
+                        {booking.paymentStatus && (
+                          <View style={styles.actionButtonsContainer}>
+                            {!booking.feedback && (
+                              <Button
+                                mode="contained"
+                                onPress={() =>
+                                  navigation.navigate('Feedback', { bookingId: booking.BookingId })
+                                }
+                                style={{ marginTop: 8 }}
+                              >
+                                Give Feedback
+                              </Button>
+                            )}
                             <Button
                               mode="contained"
-                              onPress={() =>
-                                navigation.navigate('Feedback', { bookingId: booking.BookingId })
-                              }
-                              style={{ marginTop: 8 }}
+                              onPress={() => handleCancelSubscription(booking.BookingId, booking)}
+                              style={{ marginTop: 8, marginLeft: 8 }}
                             >
-                              Give Feedback
+                              Cancel Subscription
                             </Button>
-                          )}
-                          <Button
-                            mode="contained"
-                            onPress={() => handleCancelSubscription(booking.BookingId)}
-                            style={{ marginTop: 8, marginLeft: 8 }}
-                          >
-                            Cancel Subscription
-                          </Button>
-                        </View>
-                      )}
-                      {booking.paymentStatus && booking.feedback && (
-                        <View style={styles.feedbackContainer}>
-                          <Text style={styles.feedbackLabel}>Your Feedback:</Text>
-                          <Text style={styles.feedbackText}>{booking.feedback}</Text>
-                        </View>
-                      )}
-                    </Card.Content>
-                  </Card>
-                ))
+                          </View>
+                        )}
+                        {booking.paymentStatus && booking.feedback && (
+                          <View style={styles.feedbackContainer}>
+                            <Text style={styles.feedbackLabel}>Your Feedback:</Text>
+                            <Text style={styles.feedbackText}>{booking.feedback}</Text>
+                          </View>
+                        )}
+                      </Card.Content>
+                    </Card>
+                  ))
               ) : (
                 <Text style={styles.noBookingsText}>No bookings available</Text>
               )}
@@ -300,14 +380,28 @@ const styles = StyleSheet.create({
   },
   bookingRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     padding: 8,
+  },
+  maidDetails: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  bookingSlots: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
   bookingText: {
     fontSize: 16,
     color: 'blue',
   },
   boldText: {
+    fontWeight: 'bold',
+  },
+  maidcol: {
+    color: theme.colors.primary,
     fontWeight: 'bold',
   },
   slotRow: {
@@ -343,7 +437,6 @@ const styles = StyleSheet.create({
   feedbackText: {
     color: theme.colors.onSurfaceVariant,
   },
-  // New style for action buttons container
   actionButtonsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
