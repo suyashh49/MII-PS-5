@@ -11,10 +11,10 @@ import HomeStackNavigator from './HomeStackNavigator';
 const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
-  // Get user info from the same auth hook
+  
   const { user } = useAuth();
   
-  // Create a wrapper component to pass the right props to HomeScreen
+  
   const HomeScreenWrapper = (props: any) => {
     return (
       <HomeScreen 
@@ -47,7 +47,7 @@ const BottomTabNavigator = () => {
 
           return <MaterialCommunityIcons name={iconName} color={color} size={size} />;
         },
-        tabBarActiveTintColor: '#4285F4', // Google blue
+        tabBarActiveTintColor: '#4285F4', // blue
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: { backgroundColor: '#121212' }, // Dark background
       })}

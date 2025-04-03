@@ -47,7 +47,6 @@ const BookMaid: React.FC = () => {
 
   // Helper function to determine price display based on registered services.
   const getPriceDisplay = (maid: Maid): string => {
-    // Assumes maid.cleaning and maid.cooking are booleans indicating registration for that service.
     if (maid.cleaning && maid.cooking) {
       return `Cleaning: ₹${maid.pricePerService || 'N/A'} | Cooking: ₹${maid.pricePerService || 'N/A'}`;
     } else if (maid.cleaning) {
@@ -67,7 +66,7 @@ const BookMaid: React.FC = () => {
     setSelectedService({});
   };
 
-  // Use useFocusEffect to reset state and fetch bookings when the screen comes into focus
+  // useFocusEffect to reset state and fetch bookings when the screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       resetState();
@@ -84,7 +83,7 @@ const BookMaid: React.FC = () => {
       };
       fetchBookings();
       return () => {
-        // Optional cleanup
+       
       };
     }, [])
   );
@@ -98,7 +97,7 @@ const BookMaid: React.FC = () => {
 
   const tokenForAuth = user?.token || storedToken;
 
-  // Also fetch bookings on initial load when token is available
+  // fetch bookings on initial load 
   useEffect(() => {
     const fetchBookings = async () => {
       if (!tokenForAuth) return;
@@ -131,10 +130,7 @@ const BookMaid: React.FC = () => {
     return [];
   };
 
-  /**
-   * For the allowed days (based on bookingType), determine if there is at least one time slot
-   * that is free on every day.
-   */
+  
   const hasCommonFreeSlot = (maid: Maid): boolean => {
     if (!bookingType || !maid.timeAvailable) return false;
     const allowedDays = getAllowedDays();
@@ -142,11 +138,11 @@ const BookMaid: React.FC = () => {
     let isFirstIteration = true;
   
     for (const day of allowedDays) {
-      // Get available slots for this day
+      // fetching available slots for this day
       const availableSlots: string[] = Array.isArray(maid.timeAvailable[day])
         ? maid.timeAvailable[day]
         : [];
-      // Find all booked slots for this maid on this day (regardless of service)
+      // Finding all booked slots for this maid on this day (regardless of service)
       const bookedSlots = bookings
         .filter(
           (b) =>
@@ -177,7 +173,7 @@ const BookMaid: React.FC = () => {
     return commonSlots.length > 0;
   };
 
-  // Updated search: now only requires location.
+  
   const handleSearch = async () => {
     if (!tokenForAuth) {
       Alert.alert('Authentication Error', 'Please log in again.');
@@ -279,8 +275,7 @@ const BookMaid: React.FC = () => {
     });
   };
 
-  // Render clickable service buttons.
-  // They are disabled if there is no common free slot for all allowed days.
+  // Render service buttons for a given maid.
   const renderServiceButtons = (maid: Maid) => {
     const serviceSelected = selectedService[maid.maidId] || '';
     const fullyBooked = !hasCommonFreeSlot(maid);

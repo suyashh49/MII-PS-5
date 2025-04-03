@@ -8,14 +8,14 @@ const Theme: MD3Theme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    primary: '#4285F4', // Google blue
-    accent: '#34A853',  // Google green
-    background: '#121212',
-    surface: '#1E1E1E',
-    text: '#FFFFFF',
-    error: '#EA4335',   // Google red
-    disabled: '#9AA0A6',
-    placeholder: '#5F6368', // Add placeholder color
+    primary: '#4285F4',  //blue
+    accent: '#34A853',  //green
+    background: '#121212', //black
+    surface: '#1E1E1E', //dark grey
+    text: '#FFFFFF', // white
+    error: '#EA4335',   // red
+    disabled: '#9AA0A6', // light grey
+    placeholder: '#5F6368', // grey
   } as ExtendedColors,
 };
 

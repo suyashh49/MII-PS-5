@@ -44,12 +44,12 @@ const MainNavigator = () => {
           <Stack.Screen name="MaidProfile" component={MaidProfileDetials} />
           <Stack.Screen name="KYCDetailsMaid" component={KYCPage} />
           <Stack.Screen name="HomeMaid" component={HomeScreenMaid} />
-          {/* Optionally include TimeSlotSelection here if needed */}
+          
         </>
       ) : (
         <>
           <Stack.Screen name="Home" component={BottomTabNavigator} />
-          {/* Removed separate TimeSlotSelection so it stays within the Book tab */}
+          
         </>
       )}
        <Stack.Screen name="Feedback" component={Feedback} />
