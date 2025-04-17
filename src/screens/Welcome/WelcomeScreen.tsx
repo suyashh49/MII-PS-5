@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, ImageBackground } from 'react-native';
+import React, {useEffect} from 'react';
+import { StyleSheet, View, ImageBackground, BackHandler } from 'react-native';
 import { Text, Button, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -13,6 +13,21 @@ type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welc
 const WelcomeScreen = () => {
   const theme = useTheme();
   const navigation = useNavigation<WelcomeScreenNavigationProp>();
+
+  useEffect(() => {
+    // When back button is pressed on WelcomeScreen, exit the app.
+    const backAction = () => {
+      BackHandler.exitApp();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, []);
 
   const handleGetStarted = () => {
     navigation.navigate('Profile');

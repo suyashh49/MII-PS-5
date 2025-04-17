@@ -1,21 +1,34 @@
-import React from 'react';
-import { StyleSheet, View, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, Image, TouchableOpacity, BackHandler } from 'react-native';
 import { Text, Card, ActivityIndicator, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
+import { useNavigation } from '@react-navigation/native';
 
 const LoginScreen = () => {
   const { login, isLoading } = useAuth();
   const theme = useTheme();
+  const navigation = useNavigation();
 
   const handleGoogleSignIn = async () => {
     await login();
   };
 
+  // When the hardware back button is pressed, navigate to Profile instead of going back.
+  useEffect(() => {
+    const onBackPress = () => {
+      navigation.navigate('Profile');
+      return true; // Prevent default back behavior
+    };
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => backHandler.remove();
+  }, [navigation]);
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.header, { color: theme.colors.onBackground }]}>Sign in</Text>
-      <Text style={[styles.subheader, { color: theme.colors.onSurfaceVariant }]}>Use your Google Account</Text>
-      
+      <Text style={[styles.subheader, { color: theme.colors.onSurfaceVariant }]}>
+        Use your Google Account
+      </Text>
       <Card style={styles.card}>
         <Card.Content style={styles.cardContent}>
           {isLoading ? (
@@ -27,15 +40,16 @@ const LoginScreen = () => {
               disabled={isLoading}
             >
               <Image
-                source={require('../../assets/google-icon.png')} // Add Google logo image to assets
+                source={require('../../assets/google-icon.png')}
                 style={styles.googleIcon}
               />
-              <Text style={[styles.googleButtonText, { color: '#000000' }]}>Sign in with Google</Text>
+              <Text style={[styles.googleButtonText, { color: '#000000' }]}>
+                Sign in with Google
+              </Text>
             </TouchableOpacity>
           )}
         </Card.Content>
       </Card>
-      
       <Text style={[styles.privacyText, { color: theme.colors.onSurfaceVariant }]}>
         By continuing, you agree to our terms of service and privacy policy.
       </Text>

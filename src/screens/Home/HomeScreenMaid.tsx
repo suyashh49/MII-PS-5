@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Alert, StyleSheet } from 'react-native';
+import { View, Alert, StyleSheet, BackHandler } from 'react-native';
 import { Text, Button, useTheme } from 'react-native-paper';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList, Booking } from '../../types';
@@ -33,6 +33,18 @@ const HomeScreenMaid = () => {
   const handleSignOut = () => {
     navigation.navigate('Welcome');
   };
+
+  useEffect(() => {
+    const onBackPress = () => {
+      navigation.navigate('Welcome');
+      return true; // Prevent default behavior
+    };
+
+    BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    };
+  }, [navigation]);
 
   useEffect(() => {
     const getMaidToken = async () => {

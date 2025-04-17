@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import React, {useEffect} from 'react';
+import { StyleSheet, View, ScrollView, BackHandler } from 'react-native';
 import { Text, Button, useTheme, Card, Divider, Avatar, IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -10,6 +10,16 @@ type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Prof
 const ProfileScreen = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const theme = useTheme();
+
+  useEffect(() => {
+    const onBackPress = () => {
+      navigation.navigate('Welcome');
+      return true; // Prevent default behavior
+    };
+  
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => backHandler.remove();
+  }, [navigation]);
 
   const handleGetStarted1 = () => {
     navigation.navigate('Login');
