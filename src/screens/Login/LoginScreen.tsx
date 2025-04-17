@@ -1,23 +1,34 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Image, TouchableOpacity, BackHandler } from 'react-native';
 import { Text, Card, ActivityIndicator, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../types';
+
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen = () => {
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
   const theme = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<LoginScreenNavigationProp>();
+  const [localLoading, setLocalLoading] = useState(false); 
 
   const handleGoogleSignIn = async () => {
-    await login();
+    setLocalLoading(true);
+    try {
+      await login();
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setLocalLoading(false);
+    }
   };
 
-  // When the hardware back button is pressed, navigate to Profile instead of going back.
   useEffect(() => {
     const onBackPress = () => {
       navigation.navigate('Profile');
-      return true; // Prevent default back behavior
+      return true; // prevent default pop behavior
     };
     const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => backHandler.remove();
@@ -25,34 +36,35 @@ const LoginScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text style={[styles.header, { color: theme.colors.onBackground }]}>Sign in</Text>
-      <Text style={[styles.subheader, { color: theme.colors.onSurfaceVariant }]}>
-        Use your Google Account
-      </Text>
-      <Card style={styles.card}>
-        <Card.Content style={styles.cardContent}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-          ) : (
-            <TouchableOpacity
-              style={[styles.googleButton, { borderColor: theme.colors.outline }]}
-              onPress={handleGoogleSignIn}
-              disabled={isLoading}
-            >
-              <Image
-                source={require('../../assets/google-icon.png')}
-                style={styles.googleIcon}
-              />
-              <Text style={[styles.googleButtonText, { color: '#000000' }]}>
-                Sign in with Google
-              </Text>
-            </TouchableOpacity>
-          )}
-        </Card.Content>
-      </Card>
-      <Text style={[styles.privacyText, { color: theme.colors.onSurfaceVariant }]}>
-        By continuing, you agree to our terms of service and privacy policy.
-      </Text>
+      {localLoading ? (
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      ) : (
+        <>
+          <Text style={[styles.header, { color: theme.colors.onBackground }]}>Sign in</Text>
+          <Text style={[styles.subheader, { color: theme.colors.onSurfaceVariant }]}>
+            Use your Google Account
+          </Text>
+          <Card style={styles.card}>
+            <Card.Content style={styles.cardContent}>
+              <TouchableOpacity
+                style={[styles.googleButton, { borderColor: theme.colors.outline }]}
+                onPress={handleGoogleSignIn}
+              >
+                <Image
+                  source={require('../../assets/google-icon.png')}
+                  style={styles.googleIcon}
+                />
+                <Text style={[styles.googleButtonText, { color: '#000000' }]}>
+                  Sign in with Google
+                </Text>
+              </TouchableOpacity>
+            </Card.Content>
+          </Card>
+          <Text style={[styles.privacyText, { color: theme.colors.onSurfaceVariant }]}>
+            By continuing, you agree to our terms of service and privacy policy.
+          </Text>
+        </>
+      )}
     </View>
   );
 };
