@@ -43,7 +43,7 @@ export default function OTPVerificationScreen() {
             govtId: maid.govtId, 
             imageUrl: maid.imageUrl 
           });
-          return; // Prevent further navigation
+          return; 
         }
         navigation.replace('MaidProfile');
       } else {

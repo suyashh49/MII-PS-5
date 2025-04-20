@@ -37,7 +37,7 @@ const HomeScreenMaid = () => {
   useEffect(() => {
     const onBackPress = () => {
       navigation.navigate('Welcome');
-      return true; // Prevent default behavior
+      return true; 
     };
 
     BackHandler.addEventListener('hardwareBackPress', onBackPress);
@@ -156,7 +156,7 @@ const HomeScreenMaid = () => {
   );
 };
 
-// Styles remain unchanged
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {

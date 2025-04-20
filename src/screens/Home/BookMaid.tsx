@@ -16,7 +16,7 @@ import {
   AuthHook,
   ErrorResponse
 } from '../../types/index';
-import { BookStackParamList } from '../../types/index'; // adjust the path
+import { BookStackParamList } from '../../types/index'; 
 
 type BookStackNavigationProp = StackNavigationProp<BookStackParamList, 'BookMaid'>;
 
@@ -40,12 +40,12 @@ const BookMaid: React.FC = () => {
   const [storedToken, setStoredToken] = useState<string | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
 
-  // bookingType selection and service selection state.
+  
   // bookingType: 1 = M-W-F, 2 = T-Th-S, 3 = Daily
   const [bookingType, setBookingType] = useState<number | null>(null);
   const [selectedService, setSelectedService] = useState<{ [maidId: number]: 'cooking' | 'cleaning' | 'both' }>({});
 
-  // Helper function to determine price display based on registered services.
+  
   const getPriceDisplay = (maid: Maid): string => {
     if (maid.cleaning && maid.cooking) {
       return `Cleaning: ₹${maid.pricePerService || 'N/A'} | Cooking: ₹${maid.pricePerService || 'N/A'}`;
@@ -58,7 +58,7 @@ const BookMaid: React.FC = () => {
     }
   };
 
-  // Reset state when screen comes into focus
+  
   const resetState = () => {
     setLocation('');
     setMaids([]);
@@ -66,7 +66,7 @@ const BookMaid: React.FC = () => {
     setSelectedService({});
   };
 
-  // useFocusEffect to reset state and fetch bookings when the screen comes into focus
+  
   useFocusEffect(
     React.useCallback(() => {
       resetState();
@@ -97,7 +97,7 @@ const BookMaid: React.FC = () => {
 
   const tokenForAuth = user?.token || storedToken;
 
-  // fetch bookings on initial load 
+  
   useEffect(() => {
     const fetchBookings = async () => {
       if (!tokenForAuth) return;
@@ -122,7 +122,7 @@ const BookMaid: React.FC = () => {
     }
   };
 
-  // Helper: Returns allowed days based on booking type.
+  
   const getAllowedDays = (): string[] => {
     if (bookingType === 1) return ['Monday', 'Wednesday', 'Friday'];
     if (bookingType === 2) return ['Tuesday', 'Thursday', 'Saturday'];
@@ -134,15 +134,15 @@ const BookMaid: React.FC = () => {
   const hasCommonFreeSlot = (maid: Maid): boolean => {
     if (!bookingType || !maid.timeAvailable) return false;
     const allowedDays = getAllowedDays();
-    let commonSlots: string[] = []; // use an empty array to start
+    let commonSlots: string[] = []; 
     let isFirstIteration = true;
   
     for (const day of allowedDays) {
-      // fetching available slots for this day
+     
       const availableSlots: string[] = Array.isArray(maid.timeAvailable[day])
         ? maid.timeAvailable[day]
         : [];
-      // Finding all booked slots for this maid on this day (regardless of service)
+      
       const bookedSlots = bookings
         .filter(
           (b) =>
@@ -153,18 +153,18 @@ const BookMaid: React.FC = () => {
         )
         .map((b) => b.slot[day]);
   
-      // Free slots are available slots that are not booked
+      
       const freeSlots = availableSlots.filter((slot) => !bookedSlots.includes(slot));
   
       if (isFirstIteration) {
         commonSlots = freeSlots;
         isFirstIteration = false;
       } else {
-        // Intersection of previous common slots and free slots for current day
+       
         commonSlots = commonSlots.filter((slot) => freeSlots.includes(slot));
       }
   
-      // If at any day the intersection is empty, then no common slot exists.
+      
       if (commonSlots.length === 0) {
         return false;
       }
@@ -196,7 +196,7 @@ const BookMaid: React.FC = () => {
           'Authorization': `Bearer ${tokenForAuth}`
         }
       });
-      // Filter maids that have at least one available slot on at least one allowed day.
+      
       const filteredMaids = response.data.filter((maid) => {
         const allowedDays = getAllowedDays();
         return allowedDays.some(
@@ -223,7 +223,7 @@ const BookMaid: React.FC = () => {
     }
   };
 
-  // Toggle the service selection for a given maid.
+  
   const toggleService = (maid: Maid, service: 'cooking' | 'cleaning') => {
     if (!hasCommonFreeSlot(maid)) {
       Alert.alert(
@@ -235,14 +235,14 @@ const BookMaid: React.FC = () => {
     setSelectedService((prev) => {
       const current = prev[maid.maidId];
       if (current === service) {
-        // Toggle to "both" if the same service is tapped again.
+       
         return { ...prev, [maid.maidId]: 'both' };
       }
       return { ...prev, [maid.maidId]: service };
     });
   };
 
-  // Navigate to TimeSlotSelection only if there is a common free slot available.
+  
   const handleBook = (maid: Maid) => {
     if (!tokenForAuth) {
       Alert.alert('Authentication Error', 'Please log in again.');
@@ -275,7 +275,7 @@ const BookMaid: React.FC = () => {
     });
   };
 
-  // Render service buttons for a given maid.
+  
   const renderServiceButtons = (maid: Maid) => {
     const serviceSelected = selectedService[maid.maidId] || '';
     const fullyBooked = !hasCommonFreeSlot(maid);
@@ -309,7 +309,7 @@ const BookMaid: React.FC = () => {
     const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     let availableDays = new Set<string>();
 
-    // Add all days from maid.timeAvailable that have at least one slot.
+    
     if (maid.timeAvailable) {
       Object.keys(maid.timeAvailable).forEach((day) => {
         if (Array.isArray(maid.timeAvailable[day]) && maid.timeAvailable[day].length > 0) {
@@ -318,7 +318,7 @@ const BookMaid: React.FC = () => {
       });
     }
 
-    // Convert to array and sort by week order.
+    
     const sortedDays = weekDays.filter((day) => availableDays.has(day));
     return sortedDays.join(', ');
   };

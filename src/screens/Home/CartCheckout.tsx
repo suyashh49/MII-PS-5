@@ -17,7 +17,7 @@ const CartCheckout = () => {
   const route = useRoute();
   const navigation = useNavigation<HomeNavigationProp>();
 
-  // Define all state hooks at the top level of the component
+  
   const [loading, setLoading] = useState(false);
   const [cartReset, setCartReset] = useState(false);
   const [cartData, setCartData] = useState<{
@@ -30,10 +30,10 @@ const CartCheckout = () => {
     name: string;
   } | null>(null);
 
-  // Use useEffect to process route params after component mounts
+  
   useEffect(() => {
     if (route.params && !cartReset) {
-      // Extract parameters. If a maid object is passed, use its name.
+     
       const { bookingId, service, slot, type, pricePerService } = route.params as {
         bookingId: number;
         service: 'cooking' | 'cleaning' | 'both';
@@ -41,10 +41,10 @@ const CartCheckout = () => {
         type: number;
         pricePerService: number;
       };
-      // Use the maid's name if available; otherwise fall back to a provided name property.
+      
       const maidName = (route.params as any).maid?.name || (route.params as any).name || 'Unknown Maid';
 
-      // Calculate total cost based on booking type
+     
       const daysCount = type === 3 ? 30 : (type === 1 || type === 2 ? 12 : 1);
       const cost = pricePerService * daysCount;
 
@@ -92,7 +92,7 @@ const CartCheckout = () => {
         }
       );
 
-      // Reset the cart
+      
       setCartReset(true);
 
       Alert.alert('Success', 'Booking confirmed successfully!', [
@@ -122,7 +122,7 @@ const CartCheckout = () => {
     }
   };
 
-  // Render empty cart view
+  
   if (!cartData) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
@@ -140,7 +140,7 @@ const CartCheckout = () => {
     );
   }
 
-  // Helper to convert booking type number to display string.
+  
   const getTypeDisplay = (type: number): string => {
     if (type === 1) return 'M-W-F';
     if (type === 2) return 'T-Th-S';
@@ -148,7 +148,7 @@ const CartCheckout = () => {
     return 'Unknown';
   };
 
-  // Render cart with data
+  
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
       {/* Header */}

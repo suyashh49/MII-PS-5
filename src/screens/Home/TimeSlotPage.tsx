@@ -73,12 +73,12 @@ const TimeSlotSelection: React.FC = () => {
         },
       });
       
-      // Use CommonActions to reset the navigation state and navigate to CartCheckout
+     
       navigation.dispatch(
         CommonActions.reset({
           index: 1,
           routes: [
-            { name: 'BookMaid' },  // This resets BookMaid as the base screen
+            { name: 'BookMaid' }, 
             { 
               name: 'CartCheckout', 
               params: {

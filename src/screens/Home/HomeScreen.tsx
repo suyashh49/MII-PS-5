@@ -32,7 +32,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
 
   const fetchBookings = async () => {
     try {
-      const storedToken = await user?.token; // Get token before request
+      const storedToken = await user?.token; 
       const response = await axios.get(
         'https://maid-in-india-nglj.onrender.com/api/maid/bookings',
         {
@@ -50,12 +50,11 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   };
 
   useEffect(() => {
-    // Optionally, you can fetch bookings on mount or keep it manual only.
-    // fetchBookings();
+    
   }, []);
 
   const handleToggleBookings = async () => {
-    // Refresh bookings list every time the button is clicked
+    
     await fetchBookings();
     setShowBookings((prev) => !prev);
   };
@@ -64,7 +63,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
     await logout();
   };
 
-  // Modified function to handle cancel subscription and update recent activity
+ 
   const handleCancelSubscription = async (bookingId: number, booking: Booking) => {
     try {
       const storedToken = user?.token;
@@ -80,26 +79,24 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
       );
       console.log('Cancel subscription response:', response.data);
 
-      // Alert pop-up confirming cancellation
+      
       Alert.alert(
         'Booking Cancelled',
         'Your booking has been cancelled successfully.',
         [{ text: 'OK' }]
       );
 
-      // Update recent activity with cancellation details
+      
       setRecentActivity(`Cancelled booking for ${booking.maidName}.`);
 
-      // Optionally, refresh bookings after cancellation
+     
       await fetchBookings();
     } catch (error) {
       console.error('Error cancelling subscription:', error);
     }
   };
 
-  // Modified groupSlots function:
-  // Compute all possible groupings, then if the "Daily" group qualifies,
-  // return only that grouping; otherwise, return all groups.
+  
   const groupSlots = (slot: { [day: string]: string }): { group: string; time: string }[] => {
     const groups: { [group: string]: string[] } = {
       'M-W-F': ['Monday', 'Wednesday', 'Friday'],
@@ -113,7 +110,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
       const requiredDays = groups[group];
 
       if (group === 'Daily') {
-        // For daily group, require a time for every day and they must all be the same.
+       
         const allDaysHaveTime = requiredDays.every(day => slot[day] && slot[day].trim() !== '');
         if (allDaysHaveTime) {
           const uniqueTimes = Array.from(new Set(requiredDays.map(day => slot[day])));
@@ -122,7 +119,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
           }
         }
       } else {
-        // For other groups, collect times (non-empty) from the given days.
+        
         const times = requiredDays
           .map(day => slot[day])
           .filter((time) => time !== undefined && time.trim() !== '');
@@ -133,7 +130,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
         }
       }
     }
-    // If the "Daily" group qualifies, ignore the other groups.
+    
     const dailyGroup = result.find(r => r.group === 'Daily');
     return dailyGroup ? [dailyGroup] : result;
   };

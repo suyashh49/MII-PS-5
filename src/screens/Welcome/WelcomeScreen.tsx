@@ -15,7 +15,7 @@ const WelcomeScreen = () => {
   const navigation = useNavigation<WelcomeScreenNavigationProp>();
 
   useEffect(() => {
-    // When back button is pressed on WelcomeScreen, exit the app.
+    
     const backAction = () => {
       BackHandler.exitApp();
       return true;
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   backgroundImage: {
-    // This makes the image cover the entire screen
+   
     position: 'absolute',
     top: 0,
     left: 20,

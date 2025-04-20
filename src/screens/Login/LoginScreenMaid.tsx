@@ -9,7 +9,7 @@ import axios from 'axios';
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login_Maid'>;
 
 export default function LoginScreenMaid() {
-  // Set initial value to include +91 prefix
+  
   const [phone, setPhone] = useState("+91");
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const theme = useTheme();

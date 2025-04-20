@@ -37,8 +37,8 @@ const MainNavigator = () => {
       {!user ? (
         <>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Login_Maid" component={LoginScreenMaid} />
           <Stack.Screen name="Otp" component={Otp} />
           <Stack.Screen name="MaidProfile" component={MaidProfileDetials} />

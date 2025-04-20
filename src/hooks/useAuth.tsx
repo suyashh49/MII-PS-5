@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContextType, User } from '../types';
 
 
-// Register for redirection
+
 WebBrowser.maybeCompleteAuthSession();
 
 
@@ -15,7 +15,7 @@ const API_URL = 'https://maid-in-india-nglj.onrender.com';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Hook to use auth context
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -28,7 +28,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Provider component
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);

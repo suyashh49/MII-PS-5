@@ -13,7 +13,7 @@ const Feedback = () => {
   const theme = useTheme();
   const navigation = useNavigation();
   const { params } = useRoute<FeedbackRouteProp>();
-  const { bookingId } = params; // now only bookingId is passed via route
+  const { bookingId } = params; 
   const { user } = useAuth();
   
   const [feedbackText, setFeedbackText] = useState('');
@@ -66,7 +66,7 @@ const Feedback = () => {
     }
   };
 
-  // Render 5 star icons. A filled star is shown if the current rating is at least the star's index.
+  
   const renderStars = () => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
