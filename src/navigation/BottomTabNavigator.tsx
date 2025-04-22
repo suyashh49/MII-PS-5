@@ -7,6 +7,7 @@ import CartCheckout from '../screens/Home/CartCheckout';
 import BookStackNavigator from './BookStackNavigator';
 import { useAuth } from '../hooks/useAuth';
 import HomeStackNavigator from './HomeStackNavigator';
+import theme from '../config/theme';
 
 const Tab = createBottomTabNavigator();
 
@@ -47,9 +48,9 @@ const BottomTabNavigator = () => {
 
           return <MaterialCommunityIcons name={iconName} color={color} size={size} />;
         },
-        tabBarActiveTintColor: '#4285F4', // blue
+        tabBarActiveTintColor: theme.colors.primary, // blue
         tabBarInactiveTintColor: 'gray',
-        tabBarStyle: { backgroundColor: '#121212' }, // Dark background
+        tabBarStyle: { backgroundColor: theme.colors.background }, // Dark background
       })}
     >
       <Tab.Screen 

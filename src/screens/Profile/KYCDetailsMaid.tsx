@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import { Text, Button, Card, useTheme } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,7 +17,7 @@ const KYCDetailsMaid = () => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const navigation = useNavigation<KYCDetailsMaidNavigationProp>();
   const route = useRoute<KYCDetailsMaidRouteProp>();
-  const { name, gender, location, timeAvailable, cooking, cleaning, pricePerService } = route.params;
+  const { name, gender, location, timeAvailable, cooking, cleaning, pricePerService, coordinates } = route.params;
   const theme = useTheme();
 
   const pickImage = async (setImage: React.Dispatch<React.SetStateAction<string | null>>) => {
@@ -32,9 +32,24 @@ const KYCDetailsMaid = () => {
     }
   };
 
+  useEffect(() => {
+    console.log('🌍 received coords:', coordinates);
+  }, []);
+
   const handleNext = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
+      
+      // Ensure coordinates are properly structured before sending to API
+      let latitude = null;
+      let longitude = null;
+      
+      if (coordinates) {
+        latitude = coordinates.latitude;
+        longitude = coordinates.longitude;
+        console.log('Sending coordinates to API:', { latitude, longitude });
+      }
+      
       const response = await axios.put(
         'https://maid-in-india-nglj.onrender.com/api/maid/profile',
         {
@@ -43,6 +58,8 @@ const KYCDetailsMaid = () => {
           imageUrl,
           gender,
           location,
+          latitude: coordinates?.latitude,
+          longitude: coordinates?.longitude,
           timeAvailable,
           cooking,
           cleaning,
@@ -52,6 +69,8 @@ const KYCDetailsMaid = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      
+      console.log('API Response:', response.data);
       alert('Profile created successfully');
       navigation.navigate('HomeMaid', { name, govtId, imageUrl });
     } catch (error) {
@@ -107,6 +126,21 @@ const KYCDetailsMaid = () => {
             {imageUrl && <Image source={{ uri: imageUrl }} style={styles.image} />}
           </Card.Content>
         </Card>
+        
+        {/* Display coordinates for debugging */}
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text style={[styles.label, { color: theme.colors.onBackground, textAlign: 'center' }]}>
+              Location Coordinates
+            </Text>
+            <Text style={{ textAlign: 'center' }}>
+              {coordinates ? 
+                `Latitude: ${coordinates.latitude}, Longitude: ${coordinates.longitude}` : 
+                'No coordinates available'}
+            </Text>
+          </Card.Content>
+        </Card>
+        
         <Button
           mode="contained"
           onPress={handleNext}

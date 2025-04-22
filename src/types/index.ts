@@ -14,6 +14,7 @@ export type RootStackParamList = {
   KYCDetailsMaid: {
     name: string;
     gender: string;
+    coordinates: { latitude: number; longitude: number } | null;
     location: string;
     timeAvailable: { [key: string]: string[] };
     cooking: boolean;
@@ -87,13 +88,17 @@ export type BookStackParamList = {
     contact: string;
     profileCreated: boolean;
     gender: 'Male' | 'Female' | null;
-    location: string | null;
     govtId: string | null;
     imageUrl: string | null;
     timeAvailable: TimeAvailability;
     cleaning: boolean | null;
     cooking: boolean | null;
     pricePerService: PricePerService | null;
+    location: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
   }
   
   export interface Booking {
@@ -123,6 +128,8 @@ export type BookStackParamList = {
   
   export interface SearchRequestData {
     location: string;
+      latitude?: number;
+      longitude?: number;
     service: string;
     slot: SlotData;
   }

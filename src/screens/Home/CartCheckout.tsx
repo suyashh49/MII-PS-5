@@ -150,6 +150,7 @@ const CartCheckout = () => {
 
   
   return (
+    
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>

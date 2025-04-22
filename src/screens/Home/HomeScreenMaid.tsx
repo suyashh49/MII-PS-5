@@ -7,6 +7,7 @@ import axios from 'axios';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Agenda as RawAgenda } from 'react-native-calendars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import theme from '../../config/theme';
 
 const Agenda = RawAgenda as unknown as React.ComponentType<any>;
 
@@ -168,22 +169,23 @@ const styles = StyleSheet.create({
   },
   welcomeText: { fontSize: 24, fontWeight: 'bold' },
   emptyText: { fontSize: 15 },
-  logoutButton: { borderColor: '#ffffff' },
+  logoutButton: { borderColor: theme.colors.onPrimary },
   item: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     padding: 12,
     marginRight: 10,
     marginTop: 17,
     borderRadius: 6,
     elevation: 2,
   },
-  itemText: { fontSize: 16, color: '#333' },
+  itemText: { fontSize: 16, color: theme.colors.onPrimary },
   emptyDate: {
     height: 50,
     flex: 1,
     paddingTop: 20,
     justifyContent: 'center',
-    color: '#333',
+    color: theme.colors.onSurface,
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
   },
 });

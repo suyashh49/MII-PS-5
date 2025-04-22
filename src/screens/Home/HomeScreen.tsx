@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
 import theme from '../../config/theme';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
 
 type HomeScreenRouteProp = RouteProp<HomeStackParamList, 'Home'>;
 
@@ -190,7 +191,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
               />
             )}
           />
-          <Divider />
+          {showActivity && <Divider />}
           {showActivity && (
             <Card.Content style={styles.activityCardContent}>
               <Text style={[styles.activityText, { color: theme.colors.onBackground }]}>
@@ -212,7 +213,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
               />
             )}
           />
-          <Divider />
+          {showBookings && <Divider />}
           {showBookings && (
             <Card.Content style={styles.activityCardContent}>
               {bookings.length > 0 ? (
@@ -308,7 +309,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   logoutButton: {
-    borderColor: '#ffffff',
+    borderColor: theme.colors.onPrimary,
+    backgroundColor: theme.colors.primary,
   },
   content: {
     flex: 1,
@@ -358,6 +360,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 12,
     elevation: 2,
+    
   },
   activityCardContent: {
     padding: 16,
@@ -369,8 +372,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 8,
     elevation: 3,
-    backgroundColor: '#1e1e1e',
-    shadowColor: '#000',
+    backgroundColor: theme.colors.surface,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -392,7 +395,7 @@ const styles = StyleSheet.create({
   },
   bookingText: {
     fontSize: 16,
-    color: 'blue',
+    color: theme.colors.onSurface,
   },
   boldText: {
     fontWeight: 'bold',
@@ -409,7 +412,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
     marginRight: 6,
-    color: 'blue',
+    color: theme.colors.onSurfaceVariant,
   },
   slotTime: {
     fontSize: 14,
@@ -417,7 +420,7 @@ const styles = StyleSheet.create({
   },
   noBookingsText: {
     fontSize: 16,
-    color: 'blue',
+    color: theme.colors.onSurface,
     textAlign: 'center',
   },
   feedbackContainer: {
