@@ -35,7 +35,7 @@ const Theme: MD3Theme = {
     ...MD3LightTheme.colors,
     primary: '#1368A4',  // blue (kept the same for brand consistency)
     accent: '#34A853',   // green (kept the same for brand consistency)
-    background: '#F0F0F0', // white
+    background: '#FFFFFF', // white
     surface: '#F5F5F5',   // light grey
     text: '#202124',      // dark grey/almost black
     error: '#EA4335',     // red (kept the same for consistency)

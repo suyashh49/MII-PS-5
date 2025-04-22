@@ -10,6 +10,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
 import theme from '../../config/theme';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../locales/i18n';
 
 type HomeScreenRouteProp = RouteProp<HomeStackParamList, 'Home'>;
 
@@ -30,6 +32,10 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const [recentActivity, setRecentActivity] = useState<string>('You signed in just now');
   const [showActivity, setShowActivity] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const { t } = useTranslation();
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
 
   const fetchBookings = async () => {
     try {
@@ -139,7 +145,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
-        <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>Welcome back!</Text>
+        <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>{t('welcome')}</Text>
         <Button
           mode="outlined"
           onPress={handleLogout}
