@@ -1,0 +1,24 @@
+{
+    "welcome": "स्वागत है",
+    "greeting": "हम आज आपकी कैसे मदद कर सकते हैं?",
+    "english": "अंग्रेज़ी",
+    "hindi": "हिंदी",
+    "headerTitle": "मेड/कुक बुक करें",
+    "logout": "साइन आउट",
+    "locationPlaceholder": "स्थान दर्ज करें",
+    "usingCurrentLocation": "आपके वर्तमान स्थान का उपयोग किया जा रहा है",
+    "selectBookingType": "बुकिंग प्रकार चुनें",
+    "mwf": "सोम/बुध/शुक्र",
+    "tth": "मंगल/गुरु/शनि",
+    "daily": "दैनिक",
+    "search": "खोजें",
+    "searchPrompt": "मेड खोजें।",
+    "unnamed": "नामहीन प्रदाता",
+    "priceNotSpecified": "मूल्य: निर्दिष्ट नहीं",
+    "location": "स्थान",
+    "contact": "संपर्क",
+    "available": "उपलब्ध",
+    "fullyBooked": "चयनित दिनों के लिए सभी सेवाएँ पूरी तरह से बुक हो गई हैं",
+    "book": "बुक करें"
+  }
+  

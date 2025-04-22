@@ -1,11 +1,636 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, TextInput, Alert, TouchableOpacity } from 'react-native';
+// import React, { useState, useEffect, useRef } from 'react';
+// import { StyleSheet, View, LayoutAnimation, ScrollView, TextInput, Alert, TouchableOpacity, UIManager } from 'react-native';
+// import { Text, Button, Card, Avatar, useTheme } from 'react-native-paper';
+// import { useAuth } from '../../hooks/useAuth';
+// import axios, { AxiosError } from 'axios';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { useNavigation, useFocusEffect } from '@react-navigation/native';
+// import { StackNavigationProp } from '@react-navigation/stack';
+// import {
+//   User,
+//   Maid,
+//   Booking,
+//   SearchRequestData,
+//   BookRequestData,
+//   BookingConfirmRequestData,
+//   AuthHook,
+//   ErrorResponse
+// } from '../../types/index';
+// import { BookStackParamList } from '../../types/index';
+// import theme from '../../config/theme';
+// import Geocoder from 'react-native-geocoding';
+// import Geolocation from '@react-native-community/geolocation';
+// import { Platform, PermissionsAndroid } from 'react-native';
+// import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+// import { useTranslation } from 'react-i18next';
+// import i18n from '../../locales/i18n';
+
+// Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
+
+// type BookStackNavigationProp = StackNavigationProp<BookStackParamList, 'BookMaid'>;
+
+// const isAxiosError = (error: unknown): error is AxiosError => {
+//   return (
+//     typeof error === 'object' &&
+//     error !== null &&
+//     'isAxiosError' in error &&
+//     Boolean((error as AxiosError).isAxiosError)
+//   );
+// };
+
+// if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+//   UIManager.setLayoutAnimationEnabledExperimental(true);
+// }
+
+// const BookMaid: React.FC = () => {
+//   const [expandedMaidId, setExpandedMaidId] = useState<number|null>(null);
+//   const toggleExpand = (id: number) => {
+//     // animate layout change
+//     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+//     setExpandedMaidId(prev => (prev === id ? null : id));
+//   };
+//   const { user, logout } = useAuth() as AuthHook;
+//   const theme = useTheme();
+//   const navigation = useNavigation<BookStackNavigationProp>();
+
+//   const [location, setLocation] = useState<string>('');
+//   const [maids, setMaids] = useState<Maid[]>([]);
+//   const [loading, setLoading] = useState<boolean>(false);
+//   const [storedToken, setStoredToken] = useState<string | null>(null);
+//   const [bookings, setBookings] = useState<Booking[]>([]);
+//   const [coordinates, setCoordinates] = useState<{ latitude: number, longitude: number } | null>(null);
+//   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState<boolean>(false);
+//   const [markerCoord, setMarkerCoord] = useState<{ latitude: number; longitude: number } | null>(coordinates);
+
+//   // bookingType: 1 = M-W-F, 2 = T-Th-S, 3 = Daily
+//   const [bookingType, setBookingType] = useState<number | null>(null);
+//   const [selectedService, setSelectedService] = useState<{ [maidId: number]: 'cooking' | 'cleaning' | 'both' }>({});
+
+
+//   const getPriceDisplay = (maid: Maid): string => {
+//     if (maid.cleaning && maid.cooking) {
+//       return `Cleaning: ₹${maid.pricePerService || 'N/A'} | Cooking: ₹${maid.pricePerService || 'N/A'}`;
+//     } else if (maid.cleaning) {
+//       return `Cleaning: ₹${maid.pricePerService || 'N/A'}`;
+//     } else if (maid.cooking) {
+//       return `Cooking: ₹${maid.pricePerService || 'N/A'}`;
+//     } else {
+//       return 'Price: Not specified';
+//     }
+//   };
+
+
+//   const resetState = () => {
+//     setLocation('');
+//     setMaids([]);
+//     setBookingType(null);
+//     setSelectedService({});
+//   };
+
+
+//   useFocusEffect(
+//     React.useCallback(() => {
+//       resetState();
+//       const fetchBookings = async () => {
+//         if (!tokenForAuth) return;
+//         try {
+//           const response = await axios.get<Booking[]>('https://maid-in-india-nglj.onrender.com/api/maid/bookings', {
+//             headers: { 'Authorization': `Bearer ${tokenForAuth}` }
+//           });
+//           setBookings(response.data);
+//         } catch (error) {
+//           console.error('Error fetching bookings:', error);
+//         }
+//       };
+//       fetchBookings();
+//       return () => {
+
+//       };
+//     }, [])
+//   );
+
+//   useEffect(() => {
+//     AsyncStorage.getItem('token').then((token) => {
+//       setStoredToken(token);
+//       console.log('Loaded token from storage:', token);
+//     });
+//   }, []);
+
+//   const tokenForAuth = user?.token || storedToken;
+
+
+//   useEffect(() => {
+//     const fetchBookings = async () => {
+//       if (!tokenForAuth) return;
+//       try {
+//         const response = await axios.get<Booking[]>('https://maid-in-india-nglj.onrender.com/api/maid/bookings', {
+//           headers: { 'Authorization': `Bearer ${tokenForAuth}` }
+//         });
+//         setBookings(response.data);
+//       } catch (error) {
+//         console.error('Error fetching bookings:', error);
+//       }
+//     };
+//     fetchBookings();
+//   }, [tokenForAuth]);
+
+//   const handleLogout = async () => {
+//     try {
+//       await logout();
+//     } catch (error) {
+//       console.error('Logout failed:', error);
+//       Alert.alert('Error', 'Failed to sign out. Please try again.');
+//     }
+//   };
+
+
+//   const getAllowedDays = (): string[] => {
+//     if (bookingType === 1) return ['Monday', 'Wednesday', 'Friday'];
+//     if (bookingType === 2) return ['Tuesday', 'Thursday', 'Saturday'];
+//     if (bookingType === 3) return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+//     return [];
+//   };
+
+
+//   const hasCommonFreeSlot = (maid: Maid): boolean => {
+//     if (!bookingType || !maid.timeAvailable) return false;
+//     const allowedDays = getAllowedDays();
+//     let commonSlots: string[] = [];
+//     let isFirstIteration = true;
+
+//     for (const day of allowedDays) {
+
+//       const availableSlots: string[] = Array.isArray(maid.timeAvailable[day])
+//         ? maid.timeAvailable[day]
+//         : [];
+
+//       const bookedSlots = bookings
+//         .filter(
+//           (b) =>
+//             b.maidId === maid.maidId &&
+//             b.paymentStatus === true &&
+//             b.slot &&
+//             b.slot[day]
+//         )
+//         .map((b) => b.slot[day]);
+
+
+//       const freeSlots = availableSlots.filter((slot) => !bookedSlots.includes(slot));
+
+//       if (isFirstIteration) {
+//         commonSlots = freeSlots;
+//         isFirstIteration = false;
+//       } else {
+
+//         commonSlots = commonSlots.filter((slot) => freeSlots.includes(slot));
+//       }
+
+
+//       if (commonSlots.length === 0) {
+//         return false;
+//       }
+//     }
+
+//     return commonSlots.length > 0;
+//   };
+
+
+//   const handleSearch = async () => {
+//     if (!tokenForAuth) {
+//       Alert.alert('Authentication Error', 'Please log in again.');
+//       return;
+//     }
+//     if (!location.trim() && !coordinates) {
+//       Alert.alert('Missing Information', 'Please enter a location or use your current location to search.');
+//       return;
+//     }
+//     if (!bookingType) {
+//       Alert.alert('Missing Selection', 'Please select a booking type.');
+//       return;
+//     }
+//     setLoading(true);
+//     try {
+//       const requestData: Partial<SearchRequestData> = {
+//         location,
+//         ...(coordinates && {
+//           latitude: coordinates.latitude,
+//           longitude: coordinates.longitude
+//         })
+//       };
+//       const response = await axios.post<Maid[]>('https://maid-in-india-nglj.onrender.com/api/maid/search', requestData, {
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': `Bearer ${tokenForAuth}`
+//         }
+//       });
+
+//       const filteredMaids = response.data.filter((maid) => {
+//         const allowedDays = getAllowedDays();
+//         return allowedDays.some(
+//           (day) => Array.isArray(maid.timeAvailable?.[day]) && maid.timeAvailable[day].length > 0
+//         );
+//       });
+//       setMaids(filteredMaids);
+//       if (filteredMaids.length === 0) {
+//         Alert.alert('No Results', 'No maids available for the given criteria.');
+//       }
+//     } catch (error: unknown) {
+//       console.error('Error searching maids:', error);
+//       if (isAxiosError(error)) {
+//         const axiosError = error as AxiosError<ErrorResponse>;
+//         Alert.alert(
+//           'Search Failed',
+//           axiosError.response?.data?.message || 'Could not complete the search. Please try again.'
+//         );
+//       } else {
+//         Alert.alert('Search Failed', 'Could not complete the search. Please try again.');
+//       }
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+
+//   const toggleService = (maid: Maid, service: 'cooking' | 'cleaning') => {
+//     if (!hasCommonFreeSlot(maid)) {
+//       Alert.alert(
+//         'Service Unavailable',
+//         'No common free slot available for the selected days.'
+//       );
+//       return;
+//     }
+//     setSelectedService((prev) => {
+//       const current = prev[maid.maidId];
+//       if (current === service) {
+
+//         return { ...prev, [maid.maidId]: 'both' };
+//       }
+//       return { ...prev, [maid.maidId]: service };
+//     });
+//   };
+
+
+//   const handleBook = (maid: Maid) => {
+//     if (!tokenForAuth) {
+//       Alert.alert('Authentication Error', 'Please log in again.');
+//       return;
+//     }
+//     if (!hasCommonFreeSlot(maid)) {
+//       Alert.alert(
+//         'Service Unavailable',
+//         'No common free slot available for the selected days.'
+//       );
+//       return;
+//     }
+//     const serviceSelected = selectedService[maid.maidId];
+//     if (!serviceSelected) {
+//       Alert.alert(
+//         'Service Not Selected',
+//         'Please select a service (Cooking, Cleaning, or Both) before booking.'
+//       );
+//       return;
+//     }
+//     navigation.navigate('TimeSlotSelection', {
+//       maid,
+//       bookingType: bookingType!,
+//       service: serviceSelected as 'cooking' | 'cleaning' | 'both',
+//       pricePerService:
+//         typeof maid.pricePerService === 'number'
+//           ? maid.pricePerService
+//           : Number(maid.pricePerService),
+//       name: maid.name || 'Unnamed Provider',
+//     });
+//   };
+
+
+//   const renderServiceButtons = (maid: Maid) => {
+//     const serviceSelected = selectedService[maid.maidId] || '';
+//     const fullyBooked = !hasCommonFreeSlot(maid);
+//     return (
+//       <View style={styles.serviceButtonsContainer}>
+//         {maid.cleaning && (
+//           <Button
+//             mode={serviceSelected === 'cleaning' || serviceSelected === 'both' ? 'contained' : 'outlined'}
+//             onPress={() => toggleService(maid, 'cleaning')}
+//             style={styles.serviceButton}
+//             disabled={fullyBooked}
+//           >
+//             {fullyBooked ? '(Booked)' : 'Cleaning'}
+//           </Button>
+//         )}
+//         {maid.cooking && (
+//           <Button
+//             mode={serviceSelected === 'cooking' || serviceSelected === 'both' ? 'contained' : 'outlined'}
+//             onPress={() => toggleService(maid, 'cooking')}
+//             style={styles.serviceButton}
+//             disabled={fullyBooked}
+//           >
+//             {fullyBooked ? '(Booked)' : 'Cooking'}
+//           </Button>
+//         )}
+//       </View>
+//     );
+//   };
+
+//   const getDisplayAvailableDays = (maid: Maid): string => {
+//     const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+//     let availableDays = new Set<string>();
+
+
+//     if (maid.timeAvailable) {
+//       Object.keys(maid.timeAvailable).forEach((day) => {
+//         if (Array.isArray(maid.timeAvailable[day]) && maid.timeAvailable[day].length > 0) {
+//           availableDays.add(day);
+//         }
+//       });
+//     }
+
+
+//     const sortedDays = weekDays.filter((day) => availableDays.has(day));
+//     return sortedDays.join(', ');
+//   };
+
+//   const requestLocationPermission = async () => {
+//     if (Platform.OS === 'ios') {
+//       Geolocation.requestAuthorization();
+//       return true;
+//     } else {
+//       try {
+//         const granted = await PermissionsAndroid.request(
+//           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+//           {
+//             title: "Location Permission",
+//             message: "BookMaid needs access to your location to find maids near you.",
+//             buttonNeutral: "Ask Me Later",
+//             buttonNegative: "Cancel",
+//             buttonPositive: "OK"
+//           }
+//         );
+//         return granted === PermissionsAndroid.RESULTS.GRANTED;
+//       } catch (err) {
+//         console.warn(err);
+//         return false;
+//       }
+//     }
+//   };
+
+//   const getCurrentLocation = async () => {
+//     const hasPermission = await requestLocationPermission();
+//     if (!hasPermission) {
+//       Alert.alert('Permission Denied', 'Location permission is required to use this feature.');
+//       return;
+//     }
+
+//     setIsUsingCurrentLocation(true);
+
+//     Geolocation.getCurrentPosition(
+//       (position) => {
+//         const { latitude, longitude } = position.coords;
+//         setCoordinates({ latitude, longitude });
+//         Geocoder.from(latitude, longitude)
+//           .then(json => {
+//             const addressComponent = json.results[0].formatted_address;
+//             console.log(addressComponent);
+//             setLocation(addressComponent);
+//           })
+        
+//       },
+//       (error) => {
+//         console.error(error);
+//         setIsUsingCurrentLocation(false);
+//         Alert.alert('Error', 'Failed to get your current location.');
+//       },
+//       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+//     );
+//   };
+
+
+//   return (
+//     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+//       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+//         <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>
+//           Book a Maid/Cook
+//         </Text>
+//         <Button
+//           mode="outlined"
+//           onPress={handleLogout}
+//           style={styles.logoutButton}
+//           labelStyle={{ color: theme.colors.onPrimary }}
+//         >
+//           Sign Out
+//         </Button>
+//       </View>
+
+//       <View style={styles.searchContainer}>
+//         <View style={styles.locationInputContainer}>
+//           <TextInput
+//             style={styles.searchInput}
+//             placeholder="Enter location"
+//             placeholderTextColor={theme.colors.onSurfaceVariant}
+//             value={location}
+//             onChangeText={setLocation}
+//           />
+//           <TouchableOpacity
+//             style={styles.locationButton}
+//             onPress={getCurrentLocation}
+//           >
+//             <MaterialCommunityIcons
+//               name="crosshairs-gps"
+//               size={24}
+//               color={theme.colors.primary}
+//             />
+//           </TouchableOpacity>
+//         </View>
+
+//         {isUsingCurrentLocation && (
+//           <Text style={styles.currentLocationText}>
+//             Using your current location
+//           </Text>
+//         )}
+
+//         <View style={styles.typeSelector}>
+//           <Text style={styles.typeSelectorLabel}>Select Booking Type:</Text>
+//           <View style={styles.typeOptions}>
+//             <Button
+//               mode={bookingType === 1 ? 'contained' : 'outlined'}
+//               onPress={() => setBookingType(1)}
+//               style={styles.typeButton}
+//             >
+//               M - W - F
+//             </Button>
+//             <Button
+//               mode={bookingType === 2 ? 'contained' : 'outlined'}
+//               onPress={() => setBookingType(2)}
+//               style={styles.typeButton}
+//             >
+//               T - Th - S
+//             </Button>
+//             <Button
+//               mode={bookingType === 3 ? 'contained' : 'outlined'}
+//               onPress={() => setBookingType(3)}
+//               style={styles.typeButton}
+//             >
+//               Daily
+//             </Button>
+//           </View>
+//         </View>
+//         <Button
+//           mode="contained"
+//           onPress={handleSearch}
+//           style={styles.searchButton}
+//           loading={loading}
+//           disabled={loading}
+//         >
+//           Search
+//         </Button>
+//       </View>
+
+//       <ScrollView style={styles.content}>
+//         {maids.length === 0 && !loading && (
+//           <Card style={styles.emptyCard}>
+//             <Card.Content style={styles.emptyCardContent}>
+//               <Text style={styles.emptyText}>Search for a Maid.</Text>
+//             </Card.Content>
+//           </Card>
+//         )}
+
+//         {maids.map((maid) => {
+//           const fullyBooked = !hasCommonFreeSlot(maid);
+//           const isExpanded = expandedMaidId === maid.maidId;
+
+//           return (
+//             <Card
+//               key={maid.maidId}
+//               style={[styles.maidCard, fullyBooked && styles.bookedMaidCard]}
+//               onPress={() => toggleExpand(maid.maidId)}
+//             >
+//               <Card.Content>
+//                 <View style={styles.maidInfo}>
+//                   <Avatar.Image
+//                     size={80}
+//                     source={{ uri: maid.imageUrl || 'https://via.placeholder.com/80' }}
+//                   />
+//                   <View style={styles.maidDetails}>
+//                     {/* ALWAYS VISIBLE */}
+//                     <Text style={[styles.maidName, { color: theme.colors.onBackground }]}>
+//                       {maid.name || 'Unnamed Provider'}
+//                     </Text>
+//                     <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
+//                       {maid.pricePerService ? getPriceDisplay(maid) : 'Price: Not specified'}
+//                     </Text>
+
+//                     {/* ONLY WHEN EXPANDED */}
+//                     {isExpanded && (
+//                       <>
+//                         <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
+//                           Location: {maid.location}
+//                         </Text>
+//                         <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
+//                           Contact: {maid.contact}
+//                         </Text>
+//                         <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
+//                           Available: {getDisplayAvailableDays(maid)}
+//                         </Text>
+//                         {renderServiceButtons(maid)}
+//                         {fullyBooked && (
+//                           <Text style={styles.bookedText}>
+//                             All services fully booked for selected days
+//                           </Text>
+//                         )}
+//                         <Button
+//                           mode="contained"
+//                           onPress={() => handleBook(maid)}
+//                           style={styles.bookButton}
+//                           disabled={fullyBooked}
+//                         >
+//                           Book
+//                         </Button>
+//                       </>
+//                     )}
+//                   </View>
+//                 </View>
+//               </Card.Content>
+//             </Card>
+//           );
+//         })}
+
+//       </ScrollView>
+//     </View>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: { flex: 1 },
+//   header: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//     padding: 24,
+//     paddingTop: 60,
+//   },
+//   welcomeText: { fontSize: 24, fontWeight: 'bold' },
+//   logoutButton: { borderColor: theme.colors.onPrimary, borderWidth: 1 },
+//   searchContainer: { padding: 16 },
+//   typeSelector: { marginBottom: 15 },
+//   typeSelectorLabel: { marginBottom: 16, fontSize: 16 },
+//   typeOptions: { flexDirection: 'row', justifyContent: 'space-between' },
+//   typeButton: { flex: 1, marginHorizontal: 4 },
+//   searchButton: { marginTop: 8 },
+//   content: { flex: 1, padding: 16 },
+//   emptyCard: { marginVertical: 16, borderRadius: 8 },
+//   emptyCardContent: { alignItems: 'center', padding: 24 },
+//   emptyText: { fontSize: 16, textAlign: 'center', opacity: 0.7 },
+//   maidCard: { marginBottom: 16, borderRadius: 12, elevation: 2 },
+//   bookedMaidCard: { opacity: 0.7 },
+//   maidInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+//   maidDetails: { marginLeft: 16, flex: 1 },
+//   maidName: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
+//   maidDetail: { fontSize: 14, marginBottom: 2 },
+//   serviceButtonsContainer: { flexDirection: 'row', marginTop: 6, width: '50%' },
+//   serviceButton: { marginRight: 6 },
+//   bookedText: { color: theme.colors.onPrimary, fontSize: 12, marginTop: 4, fontStyle: 'italic' },
+//   bookButton: { alignSelf: 'flex-end' },
+//   locationInputContainer: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     borderBottomWidth: 1,
+//     borderBottomColor: theme.colors.onSurfaceVariant,
+//     marginBottom: 12,
+//   },
+//   searchInput: {
+//     flex: 1,
+//     color: theme.colors.onSurface,
+//     height: 40,
+//     paddingHorizontal: 8,
+//   },
+//   locationButton: {
+//     padding: 8,
+//   },
+//   currentLocationText: {
+//     fontSize: 12,
+//     color: theme.colors.primary,
+//     marginBottom: 8,
+//     fontStyle: 'italic',
+//   },
+
+
+// });
+
+// export default BookMaid;
+
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, LayoutAnimation, ScrollView, TextInput, Alert, TouchableOpacity, UIManager, Platform, PermissionsAndroid } from 'react-native';
 import { Text, Button, Card, Avatar, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import Geocoder from 'react-native-geocoding';
+import Geolocation from '@react-native-community/geolocation';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../locales/i18n';
 import {
   User,
   Maid,
@@ -19,9 +644,11 @@ import {
 import { BookStackParamList } from '../../types/index';
 import theme from '../../config/theme';
 
-import Geolocation from '@react-native-community/geolocation';
-import { Platform, PermissionsAndroid } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 type BookStackNavigationProp = StackNavigationProp<BookStackParamList, 'BookMaid'>;
 
@@ -39,21 +666,30 @@ const BookMaid: React.FC = () => {
   const theme = useTheme();
   const navigation = useNavigation<BookStackNavigationProp>();
 
+  const { t } = useTranslation();
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
+
+  const [expandedMaidId, setExpandedMaidId] = useState<number | null>(null);
+  const toggleExpand = (id: number) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedMaidId(prev => (prev === id ? null : id));
+  };
+
   const [location, setLocation] = useState<string>('');
   const [maids, setMaids] = useState<Maid[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [storedToken, setStoredToken] = useState<string | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [coordinates, setCoordinates] = useState<{ latitude: number, longitude: number } | null>(null);
+  const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState<boolean>(false);
-
-
-  // bookingType: 1 = M-W-F, 2 = T-Th-S, 3 = Daily
   const [bookingType, setBookingType] = useState<number | null>(null);
   const [selectedService, setSelectedService] = useState<{ [maidId: number]: 'cooking' | 'cleaning' | 'both' }>({});
 
+  const tokenForAuth = user?.token || storedToken;
 
-  const getPriceDisplay = (maid: Maid): string => {
+    const getPriceDisplay = (maid: Maid): string => {
     if (maid.cleaning && maid.cooking) {
       return `Cleaning: ₹${maid.pricePerService || 'N/A'} | Cooking: ₹${maid.pricePerService || 'N/A'}`;
     } else if (maid.cleaning) {
@@ -65,6 +701,23 @@ const BookMaid: React.FC = () => {
     }
   };
 
+  // Load token
+  useEffect(() => {
+    AsyncStorage.getItem('token').then(token => setStoredToken(token));
+  }, []);
+
+  // Fetch bookings on focus
+  useFocusEffect(
+    React.useCallback(() => {
+      resetState();
+      fetchBookings();
+    }, [tokenForAuth])
+  );
+
+  // Fetch bookings on token change
+  useEffect(() => {
+    fetchBookings();
+  }, [tokenForAuth]);
 
   const resetState = () => {
     setLocation('');
@@ -73,221 +726,126 @@ const BookMaid: React.FC = () => {
     setSelectedService({});
   };
 
-
-  useFocusEffect(
-    React.useCallback(() => {
-      resetState();
-      const fetchBookings = async () => {
-        if (!tokenForAuth) return;
-        try {
-          const response = await axios.get<Booking[]>('https://maid-in-india-nglj.onrender.com/api/maid/bookings', {
-            headers: { 'Authorization': `Bearer ${tokenForAuth}` }
-          });
-          setBookings(response.data);
-        } catch (error) {
-          console.error('Error fetching bookings:', error);
-        }
-      };
-      fetchBookings();
-      return () => {
-
-      };
-    }, [])
-  );
-
-  useEffect(() => {
-    AsyncStorage.getItem('token').then((token) => {
-      setStoredToken(token);
-      console.log('Loaded token from storage:', token);
-    });
-  }, []);
-
-  const tokenForAuth = user?.token || storedToken;
-
-
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!tokenForAuth) return;
-      try {
-        const response = await axios.get<Booking[]>('https://maid-in-india-nglj.onrender.com/api/maid/bookings', {
-          headers: { 'Authorization': `Bearer ${tokenForAuth}` }
-        });
-        setBookings(response.data);
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
-      }
-    };
-    fetchBookings();
-  }, [tokenForAuth]);
+  const fetchBookings = async () => {
+    if (!tokenForAuth) return;
+    try {
+      const response = await axios.get<Booking[]>('https://maid-in-india-nglj.onrender.com/api/maid/bookings', {
+        headers: { 'Authorization': `Bearer ${tokenForAuth}` }
+      });
+      setBookings(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
       await logout();
     } catch (error) {
-      console.error('Logout failed:', error);
-      Alert.alert('Error', 'Failed to sign out. Please try again.');
+      Alert.alert(t('error'), t('logoutFailed'));
     }
   };
-
 
   const getAllowedDays = (): string[] => {
     if (bookingType === 1) return ['Monday', 'Wednesday', 'Friday'];
     if (bookingType === 2) return ['Tuesday', 'Thursday', 'Saturday'];
-    if (bookingType === 3) return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    if (bookingType === 3) return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
     return [];
   };
-
 
   const hasCommonFreeSlot = (maid: Maid): boolean => {
     if (!bookingType || !maid.timeAvailable) return false;
     const allowedDays = getAllowedDays();
     let commonSlots: string[] = [];
-    let isFirstIteration = true;
-
+    let first = true;
     for (const day of allowedDays) {
-
-      const availableSlots: string[] = Array.isArray(maid.timeAvailable[day])
-        ? maid.timeAvailable[day]
-        : [];
-
+      const availableSlots: string[] = Array.isArray(maid.timeAvailable[day]) ? maid.timeAvailable[day] : [];
       const bookedSlots = bookings
-        .filter(
-          (b) =>
-            b.maidId === maid.maidId &&
-            b.paymentStatus === true &&
-            b.slot &&
-            b.slot[day]
-        )
-        .map((b) => b.slot[day]);
-
-
-      const freeSlots = availableSlots.filter((slot) => !bookedSlots.includes(slot));
-
-      if (isFirstIteration) {
+        .filter(b => b.maidId === maid.maidId && b.paymentStatus && b.slot && b.slot[day])
+        .map(b => b.slot![day]);
+      const freeSlots = availableSlots.filter(slot => !bookedSlots.includes(slot));
+      if (first) {
         commonSlots = freeSlots;
-        isFirstIteration = false;
+        first = false;
       } else {
-
-        commonSlots = commonSlots.filter((slot) => freeSlots.includes(slot));
+        commonSlots = commonSlots.filter(s => freeSlots.includes(s));
       }
-
-
-      if (commonSlots.length === 0) {
-        return false;
-      }
+      if (commonSlots.length === 0) return false;
     }
-
     return commonSlots.length > 0;
   };
 
-
   const handleSearch = async () => {
     if (!tokenForAuth) {
-      Alert.alert('Authentication Error', 'Please log in again.');
+      Alert.alert(t('authError'), t('pleaseLogin'));
       return;
     }
     if (!location.trim() && !coordinates) {
-      Alert.alert('Missing Information', 'Please enter a location or use your current location to search.');
+      Alert.alert(t('missingInfo'), t('enterLocation'));
       return;
     }
     if (!bookingType) {
-      Alert.alert('Missing Selection', 'Please select a booking type.');
+      Alert.alert(t('missingSelection'), t('selectBookingType'));
       return;
     }
     setLoading(true);
     try {
-      const requestData: Partial<SearchRequestData> = {
-        location,
-        ...(coordinates && { 
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude
-      })
-    };
+      const requestData: Partial<SearchRequestData> = { location, ...(coordinates && { latitude: coordinates.latitude, longitude: coordinates.longitude }) };
       const response = await axios.post<Maid[]>('https://maid-in-india-nglj.onrender.com/api/maid/search', requestData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokenForAuth}`
-        }
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenForAuth}` }
       });
-
-      const filteredMaids = response.data.filter((maid) => {
-        const allowedDays = getAllowedDays();
-        return allowedDays.some(
-          (day) => Array.isArray(maid.timeAvailable?.[day]) && maid.timeAvailable[day].length > 0
-        );
-      });
-      setMaids(filteredMaids);
-      if (filteredMaids.length === 0) {
-        Alert.alert('No Results', 'No maids available for the given criteria.');
-      }
-    } catch (error: unknown) {
-      console.error('Error searching maids:', error);
+      const filtered = response.data.filter(m => getAllowedDays().some(day => Array.isArray(m.timeAvailable?.[day]) && m.timeAvailable![day].length > 0));
+      setMaids(filtered);
+      if (filtered.length === 0) Alert.alert(t('noResults'), t('noMaidsFound'));
+    } catch (error) {
+      console.error(error);
       if (isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>;
-        Alert.alert(
-          'Search Failed',
-          axiosError.response?.data?.message || 'Could not complete the search. Please try again.'
-        );
+        Alert.alert(t('searchFailed'), axiosError.response?.data?.message || t('tryAgain'));
       } else {
-        Alert.alert('Search Failed', 'Could not complete the search. Please try again.');
+        Alert.alert(t('searchFailed'), t('tryAgain'));
       }
     } finally {
       setLoading(false);
     }
   };
 
-
   const toggleService = (maid: Maid, service: 'cooking' | 'cleaning') => {
     if (!hasCommonFreeSlot(maid)) {
-      Alert.alert(
-        'Service Unavailable',
-        'No common free slot available for the selected days.'
-      );
+      Alert.alert(t('serviceUnavailable'), t('noSlot'));
       return;
     }
-    setSelectedService((prev) => {
+    setSelectedService(prev => {
       const current = prev[maid.maidId];
       if (current === service) {
-
         return { ...prev, [maid.maidId]: 'both' };
       }
       return { ...prev, [maid.maidId]: service };
     });
   };
 
-
   const handleBook = (maid: Maid) => {
     if (!tokenForAuth) {
-      Alert.alert('Authentication Error', 'Please log in again.');
+      Alert.alert(t('authError'), t('pleaseLogin'));
       return;
     }
     if (!hasCommonFreeSlot(maid)) {
-      Alert.alert(
-        'Service Unavailable',
-        'No common free slot available for the selected days.'
-      );
+      Alert.alert(t('serviceUnavailable'), t('noSlot'));
       return;
     }
     const serviceSelected = selectedService[maid.maidId];
     if (!serviceSelected) {
-      Alert.alert(
-        'Service Not Selected',
-        'Please select a service (Cooking, Cleaning, or Both) before booking.'
-      );
+      Alert.alert(t('serviceNotSelected'), t('selectService'));
       return;
     }
     navigation.navigate('TimeSlotSelection', {
       maid,
       bookingType: bookingType!,
       service: serviceSelected as 'cooking' | 'cleaning' | 'both',
-      pricePerService:
-        typeof maid.pricePerService === 'number'
-          ? maid.pricePerService
-          : Number(maid.pricePerService),
-      name: maid.name || 'Unnamed Provider',
+      pricePerService: Number(maid.pricePerService),
+      name: maid.name || t('unnamed'),
     });
   };
-
 
   const renderServiceButtons = (maid: Maid) => {
     const serviceSelected = selectedService[maid.maidId] || '';
@@ -301,7 +859,7 @@ const BookMaid: React.FC = () => {
             style={styles.serviceButton}
             disabled={fullyBooked}
           >
-            {fullyBooked ? '(Booked)' : 'Cleaning'}
+            {fullyBooked ? t('booked') : t('cleaning')}
           </Button>
         )}
         {maid.cooking && (
@@ -311,7 +869,7 @@ const BookMaid: React.FC = () => {
             style={styles.serviceButton}
             disabled={fullyBooked}
           >
-            {fullyBooked ? '(Booked)' : 'Cooking'}
+            {fullyBooked ? t('booked') : t('cooking')}
           </Button>
         )}
       </View>
@@ -321,19 +879,14 @@ const BookMaid: React.FC = () => {
   const getDisplayAvailableDays = (maid: Maid): string => {
     const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     let availableDays = new Set<string>();
-
-
     if (maid.timeAvailable) {
-      Object.keys(maid.timeAvailable).forEach((day) => {
-        if (Array.isArray(maid.timeAvailable[day]) && maid.timeAvailable[day].length > 0) {
+      Object.keys(maid.timeAvailable).forEach(day => {
+        if (Array.isArray(maid.timeAvailable![day]) && maid.timeAvailable![day].length > 0) {
           availableDays.add(day);
         }
       });
     }
-
-
-    const sortedDays = weekDays.filter((day) => availableDays.has(day));
-    return sortedDays.join(', ');
+    return weekDays.filter(day => availableDays.has(day)).join(', ');
   };
 
   const requestLocationPermission = async () => {
@@ -345,11 +898,11 @@ const BookMaid: React.FC = () => {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
-            title: "Location Permission",
-            message: "BookMaid needs access to your location to find maids near you.",
-            buttonNeutral: "Ask Me Later",
-            buttonNegative: "Cancel",
-            buttonPositive: "OK"
+            title: t('locationPermissionTitle'),
+            message: t('locationPermissionMessage'),
+            buttonNeutral: t('askMeLater'),
+            buttonNegative: t('cancel'),
+            buttonPositive: t('okay')
           }
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -363,50 +916,71 @@ const BookMaid: React.FC = () => {
   const getCurrentLocation = async () => {
     const hasPermission = await requestLocationPermission();
     if (!hasPermission) {
-      Alert.alert('Permission Denied', 'Location permission is required to use this feature.');
+      Alert.alert(t('permissionDenied'), t('requireLocationPerm'));
       return;
     }
-
     setIsUsingCurrentLocation(true);
     Geolocation.getCurrentPosition(
-      (position) => {
-        setCoordinates({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-        // Fetch location name using reverse geocoding or just set it as coordinates
-        setLocation(`${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`);
+      position => {
+        const { latitude, longitude } = position.coords;
+        setCoordinates({ latitude, longitude });
+        Geocoder.from(latitude, longitude)
+          .then(json => {
+            setLocation(json.results[0].formatted_address);
+          });
       },
-      (error) => {
+      error => {
         console.error(error);
         setIsUsingCurrentLocation(false);
-        Alert.alert('Error', 'Failed to get your current location.');
+        Alert.alert(t('error'), t('locationFail'));
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
-        <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>
-          Book a Maid/Cook
-        </Text>
-        <Button
-          mode="outlined"
-          onPress={handleLogout}
-          style={styles.logoutButton}
-          labelStyle={{ color: theme.colors.onPrimary }}
-        >
-          Sign Out
-        </Button>
-      </View>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>      
+  {/* Header */}
+  <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+    <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>
+      {t('headerTitle')}
+    </Text>
 
+    <View style={styles.headerRightContent}>
+      {/* Language selector */}
+      <View style={styles.languageSelector}>
+        <TouchableOpacity 
+          style={styles.langButton} 
+          onPress={() => changeLanguage('en')}
+        >
+          <Text style={{ color: theme.colors.onPrimary }}>EN</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.langButton} 
+          onPress={() => changeLanguage('hi')}
+        >
+          <Text style={{ color: theme.colors.onPrimary }}>HI</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {/* Logout button */}
+      <Button
+        mode="outlined"
+        onPress={handleLogout}
+        style={styles.logoutButton}
+        labelStyle={{ color: theme.colors.onPrimary }}
+      >
+        {t('logout')}
+      </Button>
+    </View>
+  </View>
+
+      {/* Search */}
       <View style={styles.searchContainer}>
         <View style={styles.locationInputContainer}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Enter location"
+            placeholder={t('locationPlaceholder')}
             placeholderTextColor={theme.colors.onSurfaceVariant}
             value={location}
             onChangeText={setLocation}
@@ -424,34 +998,36 @@ const BookMaid: React.FC = () => {
         </View>
 
         {isUsingCurrentLocation && (
-    <Text style={styles.currentLocationText}>
-      Using your current location
-    </Text>
-  )}
+          <Text style={styles.currentLocationText}>
+            {t('usingCurrentLocation')}
+          </Text>
+        )}
 
         <View style={styles.typeSelector}>
-          <Text style={styles.typeSelectorLabel}>Select Booking Type:</Text>
+          <Text style={styles.typeSelectorLabel}>
+            {t('selectBookingType')}
+          </Text>
           <View style={styles.typeOptions}>
             <Button
               mode={bookingType === 1 ? 'contained' : 'outlined'}
               onPress={() => setBookingType(1)}
               style={styles.typeButton}
             >
-              M - W - F
+              {t('mwf')}
             </Button>
             <Button
               mode={bookingType === 2 ? 'contained' : 'outlined'}
               onPress={() => setBookingType(2)}
               style={styles.typeButton}
             >
-              T - Th - S
+              {t('tth')}
             </Button>
             <Button
               mode={bookingType === 3 ? 'contained' : 'outlined'}
               onPress={() => setBookingType(3)}
               style={styles.typeButton}
             >
-              Daily
+              {t('daily')}
             </Button>
           </View>
         </View>
@@ -462,23 +1038,30 @@ const BookMaid: React.FC = () => {
           loading={loading}
           disabled={loading}
         >
-          Search
+          {t('search')}
         </Button>
       </View>
 
+      {/* Results */}
       <ScrollView style={styles.content}>
         {maids.length === 0 && !loading && (
           <Card style={styles.emptyCard}>
             <Card.Content style={styles.emptyCardContent}>
-              <Text style={styles.emptyText}>Search for a Maid.</Text>
+              <Text style={styles.emptyText}>{t('searchPrompt')}</Text>
             </Card.Content>
           </Card>
         )}
 
         {maids.map((maid) => {
           const fullyBooked = !hasCommonFreeSlot(maid);
+          const isExpanded = expandedMaidId === maid.maidId;
+
           return (
-            <Card key={maid.maidId} style={[styles.maidCard, fullyBooked && styles.bookedMaidCard]}>
+            <Card
+              key={maid.maidId}
+              style={[styles.maidCard, fullyBooked && styles.bookedMaidCard]}
+              onPress={() => toggleExpand(maid.maidId)}
+            >
               <Card.Content>
                 <View style={styles.maidInfo}>
                   <Avatar.Image
@@ -487,108 +1070,123 @@ const BookMaid: React.FC = () => {
                   />
                   <View style={styles.maidDetails}>
                     <Text style={[styles.maidName, { color: theme.colors.onBackground }]}>
-                      {maid.name || 'Unnamed Provider'}
+                      {maid.name || t('unnamed')}
                     </Text>
                     <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
-                      Location: {maid.location}
+                      {maid.pricePerService ? getPriceDisplay(maid) : t('priceNotSpecified')}
                     </Text>
-                    <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
-                      {maid.pricePerService ? getPriceDisplay(maid) : 'Price: Not specified'}
-                    </Text>
-                    <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
-                      Contact: {maid.contact}
-                    </Text>
-                    <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
-                      Available: {getDisplayAvailableDays(maid)}
-                    </Text>
-                    {renderServiceButtons(maid)}
-                    {fullyBooked && (
-                      <Text style={styles.bookedText}>
-                        All services fully booked for selected days
-                      </Text>
+
+                    {isExpanded && (
+                      <>
+                        <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
+                          {t('location')}: {maid.location}
+                        </Text>
+                        <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
+                          {t('contact')}: {maid.contact}
+                        </Text>
+                        <Text style={[styles.maidDetail, { color: theme.colors.onSurfaceVariant }]}>
+                          {t('available')}: {getDisplayAvailableDays(maid)}
+                        </Text>
+                        {renderServiceButtons(maid)}
+                        {fullyBooked && (
+                          <Text style={styles.bookedText}>
+                            {t('fullyBooked')}
+                          </Text>
+                        )}
+                        <Button
+                          mode="contained"
+                          onPress={() => handleBook(maid)}
+                          style={styles.bookButton}
+                          disabled={fullyBooked}
+                        >
+                          {t('book')}
+                        </Button>
+                      </>
                     )}
                   </View>
                 </View>
-                <Button
-                  mode="contained"
-                  onPress={() => handleBook(maid)}
-                  style={styles.bookButton}
-                  disabled={fullyBooked}
-                >
-                  Book
-                </Button>
               </Card.Content>
             </Card>
           );
         })}
+
       </ScrollView>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 24,
-    paddingTop: 60,
-  },
-  welcomeText: { fontSize: 24, fontWeight: 'bold' },
-  logoutButton: { borderColor: theme.colors.onPrimary, borderWidth: 1 },
-  searchContainer: { padding: 16 },
-  // searchInput: {
-  //   borderBottomWidth: 1,
-  //   color: theme.colors.onSurface,
-  //   borderBottomColor: theme.colors.onSurfaceVariant,
-  //   marginBottom: 12,
-  //   height: 40,
-  //   paddingHorizontal: 8,
-  // },
-  typeSelector: { marginBottom: 15 },
-  typeSelectorLabel: { marginBottom: 16, fontSize: 16 },
-  typeOptions: { flexDirection: 'row', justifyContent: 'space-between' },
-  typeButton: { flex: 1, marginHorizontal: 4 },
-  searchButton: { marginTop: 8 },
-  content: { flex: 1, padding: 16 },
-  emptyCard: { marginVertical: 16, borderRadius: 8 },
-  emptyCardContent: { alignItems: 'center', padding: 24 },
-  emptyText: { fontSize: 16, textAlign: 'center', opacity: 0.7 },
-  maidCard: { marginBottom: 16, borderRadius: 12, elevation: 2 },
-  bookedMaidCard: { opacity: 0.7 },
-  maidInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  maidDetails: { marginLeft: 16, flex: 1 },
-  maidName: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
-  maidDetail: { fontSize: 14, marginBottom: 2 },
-  serviceButtonsContainer: { flexDirection: 'row', marginTop: 6, width: '50%' },
-  serviceButton: { marginRight: 6 },
-  bookedText: { color: theme.colors.onPrimary, fontSize: 12, marginTop: 4, fontStyle: 'italic' },
-  bookButton: { alignSelf: 'flex-end' },
-  locationInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.onSurfaceVariant,
-    marginBottom: 12,
-  },
-  searchInput: {
-    flex: 1,
-    color: theme.colors.onSurface,
-    height: 40,
-    paddingHorizontal: 8,
-  },
-  locationButton: {
-    padding: 8,
-  },
-  currentLocationText: {
-    fontSize: 12,
-    color: theme.colors.primary,
-    marginBottom: 8,
-    fontStyle: 'italic',
-  },
+    container: { flex: 1 },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 24,
+      paddingTop: 60,
+    },
+    welcomeText: { fontSize: 24, fontWeight: 'bold' },
+    logoutButton: { borderColor: theme.colors.onPrimary, borderWidth: 1 },
+    searchContainer: { padding: 16 },
+    typeSelector: { marginBottom: 15 },
+    typeSelectorLabel: { marginBottom: 16, fontSize: 16 },
+    typeOptions: { flexDirection: 'row', justifyContent: 'space-between' },
+    typeButton: { flex: 1, marginHorizontal: 4 },
+    searchButton: { marginTop: 8 },
+    content: { flex: 1, padding: 16 },
+    emptyCard: { marginVertical: 16, borderRadius: 8 },
+    emptyCardContent: { alignItems: 'center', padding: 24 },
+    emptyText: { fontSize: 16, textAlign: 'center', opacity: 0.7 },
+    maidCard: { marginBottom: 16, borderRadius: 12, elevation: 2 },
+    bookedMaidCard: { opacity: 0.7 },
+    maidInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+    maidDetails: { marginLeft: 16, flex: 1 },
+    maidName: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
+    maidDetail: { fontSize: 14, marginBottom: 2 },
+    serviceButtonsContainer: { flexDirection: 'row', marginTop: 6, width: '50%' },
+    serviceButton: { marginRight: 6 },
+    bookedText: { color: theme.colors.onPrimary, fontSize: 12, marginTop: 4, fontStyle: 'italic' },
+    bookButton: { alignSelf: 'flex-end' },
+    locationInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.onSurfaceVariant,
+      marginBottom: 12,
+    },
+    searchInput: {
+      flex: 1,
+      color: theme.colors.onSurface,
+      height: 40,
+      paddingHorizontal: 8,
+    },
+    locationButton: {
+      padding: 8,
+    },
+    currentLocationText: {
+      fontSize: 12,
+      color: theme.colors.primary,
+      marginBottom: 8,
+      fontStyle: 'italic',
+    },
+    // langButton: {
+    //   marginRight: 10,
+    //   marginVertical: 4,
+    // },
+    headerRightContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    languageSelector: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: 12,
+    },
+    langButton: {
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
   
   
-});
+  });
+  
+  export default BookMaid;
 
-export default BookMaid;

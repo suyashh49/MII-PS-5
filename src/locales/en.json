@@ -1,0 +1,23 @@
+{
+        "welcome": "Welcome",
+        "greeting": "How can we help today?",
+        "english": "English",
+        "hindi": "Hindi",
+        "headerTitle": "Book a Maid/Cook",
+        "logout": "Sign Out",
+        "locationPlaceholder": "Enter location",
+        "usingCurrentLocation": "Using your current location",
+        "selectBookingType": "Select Booking Type",
+        "mwf": "M - W - F",
+        "tth": "T - Th - S",
+        "daily": "Daily",
+        "search": "Search",
+        "searchPrompt": "Search for a Maid.",
+        "unnamed": "Unnamed Provider",
+        "priceNotSpecified": "Price: Not specified",
+        "location": "Location",
+        "contact": "Contact",
+        "available": "Available",
+        "fullyBooked": "All services fully booked for selected days",
+        "book": "Book"
+  }
