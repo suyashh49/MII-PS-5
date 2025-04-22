@@ -6,7 +6,7 @@
         "headerTitle": "Book a Maid/Cook",
         "logout": "Sign Out",
         "locationPlaceholder": "Enter location",
-        "usingCurrentLocation": "Using your current location",
+        "Finding Current Location, Select Booking type": "Using your current location",
         "selectBookingType": "Select Booking Type",
         "mwf": "M - W - F",
         "tth": "T - Th - S",
