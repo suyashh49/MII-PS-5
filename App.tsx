@@ -7,7 +7,7 @@ import { Provider as PaperProvider } from 'react-native-paper';
 import Theme from '../MII-PS-5/src/config/theme';
 import MainNavigator from '../MII-PS-5/src/navigation/MainNavigator';
 import { AuthProvider } from '../MII-PS-5/src/hooks/useAuth';
-
+import 'react-native-get-random-values';
 
 
 export default function App() {

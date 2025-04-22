@@ -393,7 +393,7 @@
 //             console.log(addressComponent);
 //             setLocation(addressComponent);
 //           })
-        
+
 //       },
 //       (error) => {
 //         console.error(error);
@@ -618,6 +618,7 @@
 
 // export default BookMaid;
 
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, LayoutAnimation, ScrollView, TextInput, Alert, TouchableOpacity, UIManager, Platform, PermissionsAndroid } from 'react-native';
 import { Text, Button, Card, Avatar, useTheme } from 'react-native-paper';
@@ -689,7 +690,7 @@ const BookMaid: React.FC = () => {
 
   const tokenForAuth = user?.token || storedToken;
 
-    const getPriceDisplay = (maid: Maid): string => {
+  const getPriceDisplay = (maid: Maid): string => {
     if (maid.cleaning && maid.cooking) {
       return `Cleaning: ₹${maid.pricePerService || 'N/A'} | Cooking: ₹${maid.pricePerService || 'N/A'}`;
     } else if (maid.cleaning) {
@@ -749,7 +750,7 @@ const BookMaid: React.FC = () => {
   const getAllowedDays = (): string[] => {
     if (bookingType === 1) return ['Monday', 'Wednesday', 'Friday'];
     if (bookingType === 2) return ['Tuesday', 'Thursday', 'Saturday'];
-    if (bookingType === 3) return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    if (bookingType === 3) return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     return [];
   };
 
@@ -780,28 +781,58 @@ const BookMaid: React.FC = () => {
       Alert.alert(t('authError'), t('pleaseLogin'));
       return;
     }
+    
     if (!location.trim() && !coordinates) {
       Alert.alert(t('missingInfo'), t('enterLocation'));
       return;
     }
+    
     if (!bookingType) {
       Alert.alert(t('missingSelection'), t('selectBookingType'));
       return;
     }
+    
     setLoading(true);
+    
     try {
-      const requestData: Partial<SearchRequestData> = { location, ...(coordinates && { latitude: coordinates.latitude, longitude: coordinates.longitude }) };
-      const response = await axios.post<Maid[]>('https://maid-in-india-nglj.onrender.com/api/maid/search', requestData, {
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenForAuth}` }
-      });
-      const filtered = response.data.filter(m => getAllowedDays().some(day => Array.isArray(m.timeAvailable?.[day]) && m.timeAvailable![day].length > 0));
+      const requestData: Partial<SearchRequestData> = { 
+        location, 
+        ...(coordinates && { 
+          latitude: coordinates.latitude, 
+          longitude: coordinates.longitude 
+        }) 
+      };
+      
+      const response = await axios.post<Maid[]>(
+        'https://maid-in-india-nglj.onrender.com/api/maid/search', 
+        requestData, 
+        {
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${tokenForAuth}` 
+          }
+        }
+      );
+      
+      const filtered = response.data.filter(m => 
+        getAllowedDays().some(
+          day => Array.isArray(m.timeAvailable?.[day]) && m.timeAvailable![day].length > 0
+        )
+      );
+      
       setMaids(filtered);
-      if (filtered.length === 0) Alert.alert(t('noResults'), t('noMaidsFound'));
+      
+      if (filtered.length === 0) {
+        Alert.alert(t('noResults'), t('noMaidsFound'));
+      }
     } catch (error) {
       console.error(error);
       if (isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>;
-        Alert.alert(t('searchFailed'), axiosError.response?.data?.message || t('tryAgain'));
+        Alert.alert(
+          t('searchFailed'), 
+          axiosError.response?.data?.message || t('tryAgain')
+        );
       } else {
         Alert.alert(t('searchFailed'), t('tryAgain'));
       }
@@ -919,14 +950,27 @@ const BookMaid: React.FC = () => {
       Alert.alert(t('permissionDenied'), t('requireLocationPerm'));
       return;
     }
+    
     setIsUsingCurrentLocation(true);
+    
     Geolocation.getCurrentPosition(
       position => {
         const { latitude, longitude } = position.coords;
         setCoordinates({ latitude, longitude });
+        console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+        
+        // Reverse geocode to get address from coordinates
         Geocoder.from(latitude, longitude)
           .then(json => {
-            setLocation(json.results[0].formatted_address);
+            const addressComponent = json.results[0].formatted_address;
+            console.log(addressComponent);
+            setLocation(addressComponent);
+            setIsUsingCurrentLocation(false);
+          })
+          .catch(error => {
+            console.error('Error in geocoding:', error);
+            setIsUsingCurrentLocation(false);
+            Alert.alert(t('error'), t('geocodingFailed'));
           });
       },
       error => {
@@ -939,63 +983,102 @@ const BookMaid: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>      
-  {/* Header */}
-  <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
-    <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>
-      {t('headerTitle')}
-    </Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+        <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>
+          {t('headerTitle')}
+        </Text>
 
-    <View style={styles.headerRightContent}>
-      {/* Language selector */}
-      <View style={styles.languageSelector}>
-        <TouchableOpacity 
-          style={styles.langButton} 
-          onPress={() => changeLanguage('en')}
-        >
-          <Text style={{ color: theme.colors.onPrimary }}>EN</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.langButton} 
-          onPress={() => changeLanguage('hi')}
-        >
-          <Text style={{ color: theme.colors.onPrimary }}>HI</Text>
-        </TouchableOpacity>
+        <View style={styles.headerRightContent}>
+          {/* Language selector */}
+          <View style={styles.languageSelector}>
+            <TouchableOpacity
+              style={styles.langButton}
+              onPress={() => changeLanguage('en')}
+            >
+              <Text style={{ color: theme.colors.onPrimary }}>EN</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.langButton}
+              onPress={() => changeLanguage('hi')}
+            >
+              <Text style={{ color: theme.colors.onPrimary }}>HI</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Logout button */}
+          <Button
+            mode="outlined"
+            onPress={handleLogout}
+            style={styles.logoutButton}
+            labelStyle={{ color: theme.colors.onPrimary }}
+          >
+            {t('logout')}
+          </Button>
+        </View>
       </View>
-      
-      {/* Logout button */}
-      <Button
-        mode="outlined"
-        onPress={handleLogout}
-        style={styles.logoutButton}
-        labelStyle={{ color: theme.colors.onPrimary }}
-      >
-        {t('logout')}
-      </Button>
-    </View>
-  </View>
 
       {/* Search */}
       <View style={styles.searchContainer}>
-        <View style={styles.locationInputContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('locationPlaceholder')}
-            placeholderTextColor={theme.colors.onSurfaceVariant}
-            value={location}
-            onChangeText={setLocation}
-          />
-          <TouchableOpacity
-            style={styles.locationButton}
-            onPress={getCurrentLocation}
-          >
-            <MaterialCommunityIcons
-              name="crosshairs-gps"
-              size={24}
-              color={theme.colors.primary}
-            />
-          </TouchableOpacity>
-        </View>
+      <View style={styles.locationInputContainer}>
+        <GooglePlacesAutocomplete
+          placeholder={t('locationPlaceholder')}
+          onPress={(data, details = null) => {
+            // 'details' is provided when fetchDetails = true
+            setLocation(data.description);
+            if (details?.geometry?.location) {
+              setCoordinates({
+                latitude: details.geometry.location.lat,
+                longitude: details.geometry.location.lng
+              });
+            }
+            console.log('latitude:', details?.geometry?.location.lat);
+            console.log('longitude:', details?.geometry?.location.lng);
+          }}
+          query={{
+            key: 'AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg', 
+            language: i18n.language,
+          }}
+          fetchDetails={true}
+          enablePoweredByContainer={false}
+          styles={{
+            textInput: {
+              ...styles.searchInput,
+              height: 40,
+            },
+            listView: {
+              position: 'absolute',
+              top: 40,
+              left: 0,
+              right: 0,
+              backgroundColor: 'white',
+              borderRadius: 5,
+              flex: 1,
+              elevation: 3,
+              zIndex: 1000,
+            },
+            container: {
+              flex: 1,
+            },
+          }}
+          textInputProps={{
+            value: location,
+            onChangeText: setLocation,
+            placeholderTextColor: theme.colors.onSurfaceVariant,
+          }}
+        />
+        <TouchableOpacity
+    style={styles.locationButton}
+    onPress={getCurrentLocation}
+  >
+    <MaterialCommunityIcons
+      name="crosshairs-gps"
+      size={24}
+      color={theme.colors.primary}
+    />
+  </TouchableOpacity>
+</View>
 
         {isUsingCurrentLocation && (
           <Text style={styles.currentLocationText}>
@@ -1115,78 +1198,93 @@ const BookMaid: React.FC = () => {
   );
 };
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: 24,
-      paddingTop: 60,
-    },
-    welcomeText: { fontSize: 24, fontWeight: 'bold' },
-    logoutButton: { borderColor: theme.colors.onPrimary, borderWidth: 1 },
-    searchContainer: { padding: 16 },
-    typeSelector: { marginBottom: 15 },
-    typeSelectorLabel: { marginBottom: 16, fontSize: 16 },
-    typeOptions: { flexDirection: 'row', justifyContent: 'space-between' },
-    typeButton: { flex: 1, marginHorizontal: 4 },
-    searchButton: { marginTop: 8 },
-    content: { flex: 1, padding: 16 },
-    emptyCard: { marginVertical: 16, borderRadius: 8 },
-    emptyCardContent: { alignItems: 'center', padding: 24 },
-    emptyText: { fontSize: 16, textAlign: 'center', opacity: 0.7 },
-    maidCard: { marginBottom: 16, borderRadius: 12, elevation: 2 },
-    bookedMaidCard: { opacity: 0.7 },
-    maidInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-    maidDetails: { marginLeft: 16, flex: 1 },
-    maidName: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
-    maidDetail: { fontSize: 14, marginBottom: 2 },
-    serviceButtonsContainer: { flexDirection: 'row', marginTop: 6, width: '50%' },
-    serviceButton: { marginRight: 6 },
-    bookedText: { color: theme.colors.onPrimary, fontSize: 12, marginTop: 4, fontStyle: 'italic' },
-    bookButton: { alignSelf: 'flex-end' },
-    locationInputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.onSurfaceVariant,
-      marginBottom: 12,
-    },
-    searchInput: {
-      flex: 1,
-      color: theme.colors.onSurface,
-      height: 40,
-      paddingHorizontal: 8,
-    },
-    locationButton: {
-      padding: 8,
-    },
-    currentLocationText: {
-      fontSize: 12,
-      color: theme.colors.primary,
-      marginBottom: 8,
-      fontStyle: 'italic',
-    },
-    // langButton: {
-    //   marginRight: 10,
-    //   marginVertical: 4,
-    // },
-    headerRightContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    languageSelector: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginRight: 12,
-    },
-    langButton: {
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-    },
-  
-  
-  });
-  
-  export default BookMaid;
+  container: { flex: 1 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 24,
+    paddingTop: 60,
+  },
+  welcomeText: { fontSize: 24, fontWeight: 'bold' },
+  logoutButton: { borderColor: theme.colors.onPrimary, borderWidth: 1 },
+  searchContainer: { padding: 16 },
+  typeSelector: { marginBottom: 15 },
+  typeSelectorLabel: { marginBottom: 16, fontSize: 16 },
+  typeOptions: { flexDirection: 'row', justifyContent: 'space-between' },
+  typeButton: { flex: 1, marginHorizontal: 4 },
+  searchButton: { marginTop: 8 },
+  content: { flex: 1, padding: 16 },
+  emptyCard: { marginVertical: 16, borderRadius: 8 },
+  emptyCardContent: { alignItems: 'center', padding: 24 },
+  emptyText: { fontSize: 16, textAlign: 'center', opacity: 0.7 },
+  maidCard: { marginBottom: 16, borderRadius: 12, elevation: 2 },
+  bookedMaidCard: { opacity: 0.7 },
+  maidInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  maidDetails: { marginLeft: 16, flex: 1 },
+  maidName: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
+  maidDetail: { fontSize: 14, marginBottom: 2 },
+  serviceButtonsContainer: { flexDirection: 'row', marginTop: 6, width: '50%' },
+  serviceButton: { marginRight: 6 },
+  bookedText: { color: theme.colors.onPrimary, fontSize: 12, marginTop: 4, fontStyle: 'italic' },
+  bookButton: { alignSelf: 'flex-end' },
+  // locationInputContainer: {
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   borderBottomWidth: 1,
+  //   borderBottomColor: theme.colors.onSurfaceVariant,
+  //   marginBottom: 12,
+  // },
+  // searchInput: {
+  //   flex: 1,
+  //   color: theme.colors.onSurface,
+  //   height: 40,
+  //   paddingHorizontal: 8,
+  // },
+  locationButton: {
+    padding: 8,
+  },
+  currentLocationText: {
+    fontSize: 12,
+    color: theme.colors.primary,
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  // langButton: {
+  //   marginRight: 10,
+  //   marginVertical: 4,
+  // },
+  headerRightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  languageSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  langButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  // Add these to your styles object
+locationInputContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  borderBottomWidth: 1,
+  borderBottomColor: theme.colors.onSurfaceVariant,
+  marginBottom: 12,
+  zIndex: 1, // Important to keep the autocomplete dropdown visible
+},
+searchInput: {
+  flex: 1,
+  color: theme.colors.onSurface,
+  height: 40,
+  paddingHorizontal: 8,
+},
+
+
+});
+
+export default BookMaid;
 
