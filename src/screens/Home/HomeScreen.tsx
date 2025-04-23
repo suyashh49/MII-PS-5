@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { Text, Button, Card, Avatar, Divider, IconButton, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
+import { TextInput } from 'react-native-paper';
 import { RouteProp } from '@react-navigation/native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { RootStackParamList, User, Booking, HomeStackParamList } from '../../types';
@@ -29,6 +30,11 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const theme = useTheme();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [showBookings, setShowBookings] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableName, setEditableName] = useState(userName);
+  const [editableContact, setEditableContact] = useState(user?.contact || '');
+  const [editableAddress, setEditableAddress] = useState(user?.address || '');
+
   const [recentActivity, setRecentActivity] = useState<string>('You signed in just now');
   const [showActivity, setShowActivity] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -70,7 +76,32 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
     await logout();
   };
 
- 
+  const handleSaveProfile = async () => {
+    try {
+      const storedToken = user?.token;
+      const response = await axios.post(
+        'https://maid-in-india-nglj.onrender.com/api/auth/update',
+        {
+          name: editableName,
+          contactNumber: editableContact,
+          address: editableAddress,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${storedToken}`,
+          },
+        }
+      );
+  
+      Alert.alert('Profile Updated', 'Your profile has been updated successfully.');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
+    }
+  };
+  
   const handleCancelSubscription = async (bookingId: number, booking: Booking) => {
     try {
       const storedToken = user?.token;
@@ -102,6 +133,8 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
       console.error('Error cancelling subscription:', error);
     }
   };
+
+
 
   
   const groupSlots = (slot: { [day: string]: string }): { group: string; time: string }[] => {
@@ -171,19 +204,68 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
         </Card>
 
         <Card style={styles.infoCard}>
-          <Card.Title title="Account Information" titleStyle={{ color: theme.colors.onBackground }} />
+          <Card.Title
+            title="Account Information"
+            titleStyle={{ color: theme.colors.onBackground }}
+            right={(props) => (
+              <IconButton
+                {...props}
+                icon={isEditing ? 'check' : 'pencil'}
+                onPress={() => {
+                  if (isEditing) {
+                    handleSaveProfile();
+                  } else {
+                    setIsEditing(true);
+                  }
+                }}
+              />
+            )}
+          />
           <Divider />
           <Card.Content style={styles.infoCardContent}>
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Name:</Text>
-              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>{userName}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Email:</Text>
-              <Text style={[styles.infoValue, { color: theme.colors.onBackground }]}>{email}</Text>
-            </View>
+            {isEditing ? (
+              <>
+                <TextInput
+                  label="Name"
+                  value={editableName}
+                  onChangeText={setEditableName}
+                  mode="outlined"
+                  style={styles.input}
+                />
+                <TextInput
+                  label="Contact"
+                  value={editableContact}
+                  onChangeText={setEditableContact}
+                  mode="outlined"
+                  style={styles.input}
+                />
+                <TextInput
+                  label="Address"
+                  value={editableAddress}
+                  onChangeText={setEditableAddress}
+                  mode="outlined"
+                  style={styles.input}
+                />
+              </>
+            ) : (
+              <>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Name:</Text>
+                  <Text style={styles.infoValue}>{editableName}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Contact:</Text>
+                  <Text style={styles.infoValue}>{editableContact}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Address:</Text>
+                  <Text style={styles.infoValue}>{editableAddress}</Text>
+                </View>
+              </>
+            )}
           </Card.Content>
         </Card>
+
 
         <Card style={styles.activityCard}>
           <Card.Title
