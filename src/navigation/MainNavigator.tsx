@@ -14,10 +14,11 @@ import BottomTabNavigator from './BottomTabNavigator';
 import { useAuth } from '../hooks/useAuth';
 import { ActivityIndicator, View } from 'react-native';
 import Feedback from '../screens/Home/Feedback';
+import UserProfile  from '../screens/Home/UserProfile';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const MainNavigator = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading,isProfileCreated } = useAuth();
 
   if (isLoading) {
     return (
@@ -46,10 +47,12 @@ const MainNavigator = () => {
           <Stack.Screen name="HomeMaid" component={HomeScreenMaid} />
           
         </>
+      ) : isProfileCreated ? (
+        <Stack.Screen name="Home" component={BottomTabNavigator} />
+        
       ) : (
         <>
-          <Stack.Screen name="Home" component={BottomTabNavigator} />
-          
+          <Stack.Screen name="UserProfile" component={UserProfile} />         
         </>
       )}
        <Stack.Screen name="Feedback" component={Feedback} />

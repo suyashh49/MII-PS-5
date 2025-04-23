@@ -32,7 +32,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [isProfileCreated, setIsProfileCreated] = useState(true);
   const [request, response, promptAsync] = Google.useAuthRequest({
     //expoClientId: CLIENT_ID,
     webClientId: "411763389934-btjt6a3ua0jdmc1fuhvk20nped3gdgbh.apps.googleusercontent.com",
@@ -80,19 +80,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
           // await response JSON log
           const userInfo = await res.json();
+          console.log("userInfo:", userInfo);
+          const result = await fetch(`${API_URL}/api/auth/profile`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${userInfo.user.token}`,
+            },
+            body: JSON.stringify({ token }),
+          });
+          const userProfile = await result.json();
+          console.log(userProfile);
           console.log("User Info from backend:", userInfo);
-
-          
+          if(userProfile.data.profileCreated === false) {
+            setIsProfileCreated(false);
+          }
+          await AsyncStorage.removeItem('user');
           const newUser: User = {
             id: userInfo.user.id,
-            name: userInfo.user.name,
+            name: userProfile.data.name || userInfo.user.name,
             email: userInfo.user.email,
             photoUrl: userInfo.user.picture,
             token: userInfo.user.token,
+            contact: userProfile.data?.contact || '',
+            address: userProfile.data?.address || '',
+            gender: userProfile.data?.gender || '',
           };
 
-          
-         
           await AsyncStorage.setItem('user', JSON.stringify(newUser));
        
           // Update state
@@ -128,7 +142,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isLoading, 
+      login, 
+      logout, 
+      isProfileCreated, 
+      setProfileCreated: (value: boolean) => setIsProfileCreated(value) 
+    }}>
       {children}
     </AuthContext.Provider>
   );

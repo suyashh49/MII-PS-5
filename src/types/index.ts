@@ -5,10 +5,11 @@ export type RootStackParamList = {
   Profile: undefined;
   Login: undefined;
   Otp: { phone: string }; 
-  Home: {
-    userName: string;
-    email: string;
-  };
+  // Home: {
+  //   userName: string;
+  //   email: string;
+  // };
+  Home: undefined;
   Feedback: { bookingId: number, rating: number };
   MaidProfile: undefined;
   KYCDetailsMaid: {
@@ -27,6 +28,13 @@ export type RootStackParamList = {
     bookingId: number;
     service: 'cooking' | 'cleaning' | 'both';
   } ;
+  
+  UserProfile: {
+    token: string;
+    email: string;
+    name: string;
+    photoUrl: string;
+  };
   
 };
 
@@ -52,19 +60,31 @@ export type BookStackParamList = {
   Feedback: undefined;
 };
   
-  export interface User {
-    id: string;
-    name: string;
-    email: string;
-    photoUrl?: string;
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  photoUrl?: string;
+  token: string;
+  contact : string;
+  address : string;
+  gender : string
+};
+
+  export interface UserProfile {
     token: string;
-  }
+    email: string;
+    name: string;
+    photoUrl: string;
+  };
   
   export interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     login: () => Promise<void>;
     logout: () => Promise<void>;
+    isProfileCreated: boolean;
+    setProfileCreated: (value: boolean) => void;
   }
 
   export interface UserBooking {

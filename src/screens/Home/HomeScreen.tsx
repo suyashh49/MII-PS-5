@@ -31,7 +31,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [showBookings, setShowBookings] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editableName, setEditableName] = useState(userName);
+  const [editableName, setEditableName] = useState(user?.name || '');
   const [editableContact, setEditableContact] = useState(user?.contact || '');
   const [editableAddress, setEditableAddress] = useState(user?.address || '');
 
@@ -63,7 +63,21 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   };
 
   useEffect(() => {
-    
+    const fetchUserData = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser: User = JSON.parse(storedUser);
+          setEditableName(parsedUser.name);
+          setEditableContact(parsedUser.contact);
+          setEditableAddress(parsedUser.address);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   const handleToggleBookings = async () => {
@@ -197,7 +211,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
               source={{ uri: photoUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(userName) }}
             />
             <View style={styles.userInfo}>
-              <Text style={[styles.userName, { color: theme.colors.onBackground }]}>{userName}</Text>
+              <Text style={[styles.userName, { color: theme.colors.onBackground }]}>{editableName}</Text>
               <Text style={[styles.userEmail, { color: theme.colors.onSurfaceVariant }]}>{email}</Text>
             </View>
           </Card.Content>
@@ -239,13 +253,13 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
                   mode="outlined"
                   style={styles.input}
                 />
-                <TextInput
+                {/* <TextInput
                   label="Address"
                   value={editableAddress}
                   onChangeText={setEditableAddress}
                   mode="outlined"
                   style={styles.input}
-                />
+                /> */}
               </>
             ) : (
               <>
@@ -257,10 +271,10 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
                   <Text style={styles.infoLabel}>Contact:</Text>
                   <Text style={styles.infoValue}>{editableContact}</Text>
                 </View>
-                <View style={styles.infoRow}>
+                {/* <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>Address:</Text>
                   <Text style={styles.infoValue}>{editableAddress}</Text>
-                </View>
+                </View> */}
               </>
             )}
           </Card.Content>
