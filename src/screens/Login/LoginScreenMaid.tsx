@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Text, Button, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
+import PhoneInput from 'react-native-phone-number-input';
 import axios from 'axios';
+import { LogBox } from 'react-native';
+import theme from '../../config/theme';
+
+LogBox.ignoreLogs([
+  'CountryItem: Support for defaultProps will be removed',
+]);
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login_Maid'>;
 
 export default function LoginScreenMaid() {
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
+  const [formattedValue, setFormattedValue] = useState('');
+  const [valid, setValid] = useState(false);
+  const phoneInput = useRef<PhoneInput>(null);
   
-  const [phone, setPhone] = useState("+91");
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const theme = useTheme();
 
   const handleGetStarted = async () => {
-    console.log("Sending OTP to", phone);
+    const checkValid = phoneInput.current?.isValidNumber(phoneNumber);
+    setValid(checkValid || false);
+    
+    if (!checkValid) {
+      alert('Please enter a valid phone number');
+      return;
+    }
+
+    console.log("Sending OTP to", formattedValue);
     try {
-      await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/send-otp', { contact: phone });
-      alert(`OTP sent to ${phone}`);
-      navigation.navigate('Otp', { phone });
+      await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/send-otp', { contact: formattedValue });
+      alert(`OTP sent to ${formattedValue}`);
+      navigation.navigate('Otp', { phone: formattedValue });
     } catch (error) {
       console.error("Error sending OTP:", error);
       alert("Failed to send OTP. Please try again.");
@@ -31,17 +50,27 @@ export default function LoginScreenMaid() {
       <Text style={[styles.header, { color: theme.colors.onBackground }]}>
         Enter your phone number
       </Text>
-      <TextInput
-        style={[
-          styles.input,
-          { color: theme.colors.onBackground, borderBottomColor: theme.colors.primary }
-        ]}
-        placeholder="Phone Number"
-        placeholderTextColor={theme.colors.onSurfaceVariant}
-        keyboardType="phone-pad"
-        value={phone}
-        onChangeText={(text) => setPhone(text)}
+      
+      <PhoneInput
+        ref={phoneInput}
+        defaultValue={phoneNumber}
+        defaultCode="IN"
+        layout="first"
+        onChangeText={(text) => {
+          setPhoneNumber(text);
+        }}
+        onChangeFormattedText={(text) => {
+          setFormattedValue(text);
+          setCountryCode(phoneInput.current?.getCallingCode() || '+91');
+        }}
+        withDarkTheme={theme.dark}
+        withShadow
+        autoFocus
+        containerStyle={styles.phoneInputContainer}
+        textContainerStyle={styles.phoneInputTextContainer}
+        textInputStyle={{ color: theme.colors.onBackground }}
       />
+      
       <View style={styles.buttonContainer}>
         <Button
           mode="contained"
@@ -69,11 +98,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontWeight: 'bold',
   },
-  input: {
-    borderBottomWidth: 1,
-    width: 200,
-    marginVertical: 10,
-    textAlign: "center",
+  phoneInputContainer: {
+    width: '100%',
+    marginBottom: 20,
+    borderRadius: 25,
+    backgroundColor: theme.colors.background,
+  },
+  phoneInputTextContainer: {
+    borderRadius: 20,
+    backgroundColor: 'transparent',
   },
   buttonContainer: {
     marginTop: 32,
@@ -84,7 +117,6 @@ const styles = StyleSheet.create({
   button: {
     width: '90%',
     borderRadius: 30,
-    //marginTop: 5,
     paddingVertical: 2,
   },
   buttonContent: {
