@@ -13,6 +13,8 @@ import theme from '../../config/theme';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../locales/i18n';
+import Geolocation from '@react-native-community/geolocation';
+import { Platform, PermissionsAndroid } from 'react-native';
 
 type HomeScreenRouteProp = RouteProp<HomeStackParamList, 'Home'>;
 
@@ -38,10 +40,72 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const [recentActivity, setRecentActivity] = useState<string>('You signed in just now');
   const [showActivity, setShowActivity] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
   const { t } = useTranslation();
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
   };
+
+  // Request permission and get coordinates
+  const getMyLocation = async (setCoordinates: (coords: { latitude: number; longitude: number }) => void) => {
+    const requestLocationPermission = async () => {
+      if (Platform.OS === 'ios') {
+        Geolocation.requestAuthorization();
+        return true;
+      } else {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+              title: "Location Permission",
+              message: "App needs access to your location.",
+              buttonNeutral: "Ask Me Later",
+              buttonNegative: "Cancel",
+              buttonPositive: "OK"
+            }
+          );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        } catch (err) {
+          console.warn(err);
+          return false;
+        }
+      }
+    };
+  
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) {
+      Alert.alert('Permission Denied', 'Location permission is required.');
+      return;
+    }
+  
+    Geolocation.getCurrentPosition(
+      async (position) => {
+        const coords = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+        setCoordinates(coords);
+        // Store coordinates in AsyncStorage
+        try {
+          await AsyncStorage.setItem('userCoordinates', JSON.stringify(coords));
+        } catch (err) {
+          console.error('Error saving coordinates:', err);
+        }
+        //Alert.alert('Location Captured', 'Your location has been successfully captured!');
+      },
+      (error) => {
+        console.error(error);
+        Alert.alert('Error', 'Failed to get your current location.');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+  };
+
+  useEffect(() => {
+    getMyLocation(setCoordinates);
+  }, []);
+
+  console.log('Coordinates:', coordinates);
 
   const fetchBookings = async () => {
     try {
@@ -543,6 +607,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
+  },
+  input: {
+    marginBottom: 16,
+    backgroundColor: theme.colors.surface,
   },
 });
 

@@ -17,7 +17,7 @@
 //   const route = useRoute();
 //   const navigation = useNavigation<HomeNavigationProp>();
 
-  
+
 //   const [loading, setLoading] = useState(false);
 //   const [cartReset, setCartReset] = useState(false);
 //   const [cartData, setCartData] = useState<{
@@ -30,10 +30,10 @@
 //     name: string;
 //   } | null>(null);
 
-  
+
 //   useEffect(() => {
 //     if (route.params && !cartReset) {
-     
+
 //       const { bookingId, service, slot, type, pricePerService } = route.params as {
 //         bookingId: number;
 //         service: 'cooking' | 'cleaning' | 'both';
@@ -41,10 +41,10 @@
 //         type: number;
 //         pricePerService: number;
 //       };
-      
+
 //       const maidName = (route.params as any).maid?.name || (route.params as any).name || 'Unknown Maid';
 
-     
+
 //       const daysCount = type === 3 ? 30 : (type === 1 || type === 2 ? 12 : 1);
 //       const cost = pricePerService * daysCount;
 
@@ -92,7 +92,7 @@
 //         }
 //       );
 
-      
+
 //       setCartReset(true);
 
 //       Alert.alert('Success', 'Booking confirmed successfully!', [
@@ -122,7 +122,7 @@
 //     }
 //   };
 
-  
+
 //   if (!cartData) {
 //     return (
 //       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
@@ -140,7 +140,7 @@
 //     );
 //   }
 
-  
+
 //   const getTypeDisplay = (type: number): string => {
 //     if (type === 1) return 'M-W-F';
 //     if (type === 2) return 'T-Th-S';
@@ -148,9 +148,9 @@
 //     return 'Unknown';
 //   };
 
-  
+
 //   return (
-    
+
 //     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
 //       {/* Header */}
 //       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
@@ -304,6 +304,11 @@ import axios, { AxiosError } from 'axios';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList, ErrorResponse } from '../../types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Geocoder from 'react-native-geocoding';
+
+Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
 
 type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -319,12 +324,14 @@ type BookingItem = {
 
 const CartCheckout = () => {
   const [address, setAddress] = useState('');
+  const [addressLine1, setAddressLine1] = useState('');
+  const [addressLine2, setAddressLine2] = useState('');
+  const [addressLine3, setAddressLine3] = useState('');
   const [contact, setContact] = useState('');
   const { user, logout } = useAuth();
   const theme = useTheme();
-  const route = useRoute();
+  const route = useRoute<RouteProp<RootStackParamList, 'CartCheckout'>>();
   const navigation = useNavigation<HomeNavigationProp>();
-
   const [loading, setLoading] = useState(false);
   const [cartItems, setCartItems] = useState<BookingItem[]>([]);
   const [totalCost, setTotalCost] = useState(0);
@@ -338,8 +345,11 @@ const CartCheckout = () => {
         slot: string;
         type: number;
         pricePerService: number;
+        contactNumber: string;
       };
-      
+
+      // Fetch contact number from params or AsyncStorage
+
       const maidName = (route.params as any).maid?.name || (route.params as any).name || 'Unknown Maid';
 
       const daysCount = type === 3 ? 30 : (type === 1 || type === 2 ? 12 : 1);
@@ -357,7 +367,7 @@ const CartCheckout = () => {
 
       // Check if booking already exists in cart
       const existingBookingIndex = cartItems.findIndex(item => item.bookingId === bookingId);
-      
+
       if (existingBookingIndex === -1) {
         // Add new booking to cart
         setCartItems(prevItems => [...prevItems, newBooking]);
@@ -365,6 +375,52 @@ const CartCheckout = () => {
     }
   }, [route.params]);
 
+  useEffect(() => {
+    if (route.params?.contactNumber) {
+      setContact(route.params.contactNumber);
+    } else {
+      // Try to get contact from user object in AsyncStorage
+      AsyncStorage.getItem('user').then(storedUser => {
+        if (storedUser) {
+          try {
+            const userObj = JSON.parse(storedUser);
+            if (userObj.contact) setContact(userObj.contact);
+            else if (userObj.contactNumber) setContact(userObj.contactNumber);
+          } catch (e) {
+            // fallback: do nothing
+          }
+        }
+      });
+    }
+  }, [route.params?.contactNumber]);
+
+  useEffect(() => {
+    const fetchAndSetAddress = async () => {
+      try {
+        const coordsString = await AsyncStorage.getItem('userCoordinates');
+        if (coordsString) {
+          const coords = JSON.parse(coordsString);
+          const geoRes = await Geocoder.from(coords.latitude, coords.longitude);
+          if (
+            geoRes.results &&
+            geoRes.results.length > 0 &&
+            geoRes.results[0].formatted_address
+          ) {
+            const address = geoRes.results[0].formatted_address;
+            // Split address into lines
+            const lines = address.split(',').map(line => line.trim());
+            setAddressLine1(lines[0] || '');
+            setAddressLine2(lines[1] || '');
+            setAddressLine3(lines.slice(2).join(', ') || '');
+          }
+        }
+      } catch (error) {
+        console.error('Error converting coordinates to address:', error);
+      }
+    };
+  
+    fetchAndSetAddress();
+  }, []);
   // Calculate total cost whenever cart items change
   useEffect(() => {
     const newTotal = cartItems.reduce((sum, item) => sum + item.cost, 0);
@@ -389,6 +445,11 @@ const CartCheckout = () => {
       return;
     }
 
+    const fullAddress = [addressLine1, addressLine2, addressLine3]
+      .filter(line => line.trim() !== '')
+      .join(', ');
+
+
     setLoading(true);
     try {
       // Make sequential requests for each booking
@@ -397,7 +458,7 @@ const CartCheckout = () => {
           bookingId: item.bookingId,
           service: item.service,
           cost: item.cost,
-          userLocation: address,
+          userLocation: fullAddress,
           userContact: contact,
         };
 
@@ -420,10 +481,7 @@ const CartCheckout = () => {
         {
           text: 'OK',
           onPress: () => {
-            navigation.navigate('Home', {
-              userName: user?.name || '',
-              email: user?.email || '',
-            });
+            navigation.navigate('Home');
           },
         },
       ]);
@@ -514,9 +572,23 @@ const CartCheckout = () => {
           <Card.Content>
             <Text style={styles.infoTitle}>Delivery Information</Text>
             <TextInput
-              label="Enter Address"
-              value={address}
-              onChangeText={setAddress}
+              label="Address Line 1"
+              value={addressLine1}
+              onChangeText={setAddressLine1}
+              mode="outlined"
+              style={styles.textInput}
+            />
+            <TextInput
+              label="Address Line 2"
+              value={addressLine2}
+              onChangeText={setAddressLine2}
+              mode="outlined"
+              style={styles.textInput}
+            />
+            <TextInput
+              label="Address Line 3"
+              value={addressLine3}
+              onChangeText={setAddressLine3}
               mode="outlined"
               style={styles.textInput}
             />

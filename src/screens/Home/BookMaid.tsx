@@ -25,6 +25,7 @@ import {
 import { BookStackParamList } from '../../types/index';
 import theme from '../../config/theme';
 
+
 Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -255,6 +256,7 @@ const BookMaid: React.FC = () => {
       service: serviceSelected as 'cooking' | 'cleaning' | 'both',
       pricePerService: Number(maid.pricePerService),
       name: maid.name || t('unnamed'),
+      contactNumber: user?.contact || t('contactNotProvided')
     });
   };
 

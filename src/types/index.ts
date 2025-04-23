@@ -26,7 +26,14 @@ export type RootStackParamList = {
   BookMaid: undefined; 
   CartCheckout: {
     bookingId: number;
-    service: 'cooking' | 'cleaning' | 'both';
+  maidId: number;
+  service: 'cooking' | 'cleaning' | 'both';
+  slot: string;
+  type: number;
+  pricePerService: number;
+  name: string;
+  isNewBooking: boolean;
+  contactNumber: string;
   } ;
   
   UserProfile: {
@@ -56,6 +63,7 @@ export type BookStackParamList = {
     service: 'cooking' | 'cleaning' | 'both';
     pricePerService: number;
     name: string;
+    contactNumber: string;
   };
   Feedback: undefined;
   CartCheckout: { bookingId: any; maidId: number; service: "cooking" | "cleaning" | "both"; slot: string; type: number; pricePerService: number; name: string; isNewBooking: boolean; };

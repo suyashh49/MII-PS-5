@@ -194,7 +194,7 @@ const TimeSlotSelection: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [bookingInProgress, setBookingInProgress] = useState<boolean>(false);
   const [storedToken, setStoredToken] = useState<string | null>(null);
-
+  //console.log('TimeS params:', route.params);
   const getAllowedDays = (): string[] => {
     if (bookingType === 1) return ['Monday', 'Wednesday', 'Friday'];
     if (bookingType === 2) return ['Tuesday', 'Thursday', 'Saturday'];
@@ -245,7 +245,8 @@ const TimeSlotSelection: React.FC = () => {
         type: bookingType,
         pricePerService: pricePerService,
         name: name || maid.name || 'Unknown Maid',
-        isNewBooking: true  // Flag to indicate this is a new booking
+        isNewBooking: true,  // Flag to indicate this is a new booking
+        
       });
       
     } catch (error: unknown) {
