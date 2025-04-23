@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, Alert, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, Alert, ScrollView, TouchableOpacity, Dimensions , Animated} from 'react-native';
 import { Text, Button, TextInput, useTheme } from 'react-native-paper';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -14,6 +14,11 @@ import { Card, Title, Paragraph, DataTable, List } from 'react-native-paper';
 import dayjs from 'dayjs';
 import { LineChart, BarChart, PieChart, ContributionGraph } from 'react-native-chart-kit';
 
+import { useRef } from 'react';
+import { Linking,Platform} from 'react-native';
+import Geocoder from 'react-native-geocoding';
+
+Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -39,6 +44,13 @@ const HomeScreenMaid: React.FC = () => {
   const [maidToken, setMaidToken] = useState<string | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [items, setItems] = useState<{ [date: string]: any[] }>({});
+
+  // State to track which booking is expanded
+  const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
+  
+  // Animation values for card expansion
+  const [cardAnimations, setCardAnimations] = useState<{[key: string]: Animated.Value}>({});
+
 
   useEffect(() => {
     AsyncStorage.getItem('token')
@@ -72,14 +84,16 @@ const HomeScreenMaid: React.FC = () => {
       d.setDate(today.getDate() + i);
       newItems[getLocalDateString(d)] = [];
     }
-    bookings.forEach(b => {
+    bookings.forEach((b, bookingIndex) => {
       Object.keys(b.slot).forEach(dayName => {
         for (let i = 0; i < 30; i++) {
           const d = new Date(today);
           d.setDate(today.getDate() + i);
           if (d.toLocaleDateString('en-US', { weekday: 'long' }) === dayName) {
             const key = getLocalDateString(d);
+            const uniqueId = `booking-${bookingIndex}-${dayName}-${i}`;
             newItems[key].push({
+              id: uniqueId,
               name: `Booking for ${b.userName}`,
               time: b.slot[dayName],
               location: b.userLocation,
@@ -94,14 +108,85 @@ const HomeScreenMaid: React.FC = () => {
 
   useEffect(() => { generateCalendarItems(); }, [bookings, generateCalendarItems]);
 
-  const renderItem = (item: any) => (
-    <View style={styles.item}>
-      <Text style={styles.itemText}>{item.name}</Text>
-      <Text style={styles.itemText}>Time: {item.time}</Text>
-      <Text style={styles.itemText}>Location: {item.location || 'N/A'}</Text>
-      <Text style={styles.itemText}>Contact: {item.userContact}</Text>
-    </View>
-  );
+  // Function to toggle card expansion
+  const toggleCardExpansion = (id: string) => {
+    setExpandedBookingId(expandedBookingId === id ? null : id);
+  };
+    
+  
+  // Function to open Google Maps with directions
+  const openDirections = async (location: string) => {
+    try {
+      if (!location || location === 'N/A') {
+        Alert.alert('Error', 'No location information available');
+        return;
+      }
+      
+      // First try using Geocoder to get coordinates
+      try {
+        const response = await Geocoder.from(location);
+        if (response.results && response.results.length > 0) {
+          const { lat, lng } = response.results[0].geometry.location;
+          const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+          
+          const canOpen = await Linking.canOpenURL(url);
+          if (canOpen) {
+            await Linking.openURL(url);
+            return;
+          }
+        }
+      } catch (geocodeError) {
+        console.log('Geocoding error, falling back to address search', geocodeError);
+      }
+      
+      // Fallback to direct address search if geocoding fails
+      const encodedAddress = encodeURIComponent(location);
+      const fallbackUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      
+      const canOpenFallback = await Linking.canOpenURL(fallbackUrl);
+      if (canOpenFallback) {
+        await Linking.openURL(fallbackUrl);
+      } else {
+        Alert.alert('Error', 'Cannot open Google Maps');
+      }
+    } catch (error) {
+      console.error('Error opening maps:', error);
+      Alert.alert('Error', 'Failed to open directions');
+    }
+  };
+
+  const renderItem = (item: any) => {
+    const isExpanded = expandedBookingId === item.id;
+
+    return (
+      <TouchableOpacity 
+        onPress={() => toggleCardExpansion(item.id)}
+        activeOpacity={0.8}
+        style={[
+          styles.item,
+          isExpanded && styles.expandedItem
+        ]}
+      >
+        <View style={styles.itemContent}>
+          <Text style={styles.itemText}>{item.name}</Text>
+          <Text style={styles.itemText}>Time: {item.time}</Text>
+          <Text style={styles.itemText}>Location: {item.location || 'N/A'}</Text>
+          <Text style={styles.itemText}>Contact: {item.userContact}</Text>
+          
+          {isExpanded && (
+            <Button 
+              mode="contained" 
+              onPress={() => openDirections(item.location)}
+              style={styles.directionsButton}
+              icon="map-marker-radius"
+            >
+              Show Directions
+            </Button>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const handleSignOut = () => navigation.navigate('Welcome');
 
@@ -1106,6 +1191,67 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginTop: 2,
+  },
+  // header: {
+  //   flexDirection: 'row', 
+  //   justifyContent: 'space-between', 
+  //   alignItems: 'center',
+  //   padding: 24, 
+  //   paddingTop: 60
+  // },
+  // welcomeText: { 
+  //   fontSize: 24, 
+  //   fontWeight: 'bold' 
+  // },
+  // logoutButton: { 
+  //   borderColor: '#fff' 
+  // },
+  // item: {
+  //   backgroundColor: '#fff', 
+  //   padding: 12, 
+  //   marginRight: 10,
+  //   marginTop: 17, 
+  //   borderRadius: 6, 
+  //   elevation: 2,
+  //   overflow: 'hidden'
+  // },
+  itemContent: {
+    flex: 1
+  },
+  // itemText: { 
+  //   fontSize: 16, 
+  //   color: '#333',
+  //   marginBottom: 2
+  // },
+  directionsButton: {
+    marginTop: 10,
+    borderRadius: 4
+  },
+  directionsButtonText: {
+    fontSize: 14
+  },
+  // emptyDate: {
+  //   height: 40, 
+  //   flex: 1, 
+  //   paddingTop: 20,
+  //   justifyContent: 'center', 
+  //   backgroundColor: '#f5f5f5', 
+  //   alignItems: 'center'
+  // },
+  // center: { 
+  //   flex: 1, 
+  //   justifyContent: 'center', 
+  //   alignItems: 'center' 
+  // },
+  expandedItem: {
+    minHeight: 180,
+    elevation: 6,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
   },
 });
 export default HomeScreenMaid;

@@ -1,6 +1,6 @@
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, LayoutAnimation, ScrollView, TextInput, Alert, TouchableOpacity, UIManager, Platform, PermissionsAndroid } from 'react-native';
+import { StyleSheet, View, LayoutAnimation, ScrollView, TextInput, Alert, TouchableOpacity, UIManager, Platform, PermissionsAndroid} from 'react-native';
 import { Text, Button, Card, Avatar, useTheme } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import axios, { AxiosError } from 'axios';
