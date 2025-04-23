@@ -323,7 +323,7 @@ type BookingItem = {
 };
 
 const CartCheckout = () => {
-  const [address, setAddress] = useState('');
+  //const [address, setAddress] = useState('');
   const [addressLine1, setAddressLine1] = useState('');
   const [addressLine2, setAddressLine2] = useState('');
   const [addressLine3, setAddressLine3] = useState('');
@@ -440,7 +440,7 @@ const CartCheckout = () => {
   const handleConfirmPayment = async () => {
     if (cartItems.length === 0) return;
 
-    if (!address.trim() || !contact.trim()) {
+    if (!addressLine1.trim() || !addressLine2.trim() || !addressLine3.trim() || !contact.trim()) {
       Alert.alert('Required Fields', 'Please fill in your address and contact information.');
       return;
     }
@@ -570,7 +570,7 @@ const CartCheckout = () => {
         {/* User Information */}
         <Card style={styles.infoCard}>
           <Card.Content>
-            <Text style={styles.infoTitle}>Delivery Information</Text>
+            <Text style={styles.infoTitle}>User's Address</Text>
             <TextInput
               label="Address Line 1"
               value={addressLine1}
