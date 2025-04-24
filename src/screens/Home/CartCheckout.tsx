@@ -296,9 +296,9 @@
 
 // export default CartCheckout;
 
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, Alert } from 'react-native';
-import { Text, Button, Card, Divider, useTheme, TextInput, IconButton } from 'react-native-paper';
+import React, { useState, useEffect, useRef } from 'react';
+import { SafeAreaView, StyleSheet, View, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { Text, Button, Card, Divider, useTheme, TextInput, IconButton, Menu } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import axios, { AxiosError } from 'axios';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -307,6 +307,9 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Geocoder from 'react-native-geocoding';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import i18n from '../../locales/i18n';
+import { useTranslation } from 'react-i18next';
 
 Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
 
@@ -335,9 +338,17 @@ const CartCheckout = () => {
   const [loading, setLoading] = useState(false);
   const [cartItems, setCartItems] = useState<BookingItem[]>([]);
   const [totalCost, setTotalCost] = useState(0);
+  const { t } = useTranslation();
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
+  const menuRef = useRef<View>(null);
+  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
+  const [menuVisible, setMenuVisible] = useState<boolean>(false);
+  const [languageSubmenuVisible, setLanguageSubmenuVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    
+
     if (route.params) {
       const { bookingId, service, slot, type, pricePerService } = route.params as {
         bookingId: number;
@@ -348,7 +359,7 @@ const CartCheckout = () => {
         contactNumber: string;
       };
 
-      
+
 
       const maidName = (route.params as any).maid?.name || (route.params as any).name || 'Unknown Maid';
 
@@ -365,11 +376,11 @@ const CartCheckout = () => {
         name: maidName
       };
 
-      
+
       const existingBookingIndex = cartItems.findIndex(item => item.bookingId === bookingId);
 
       if (existingBookingIndex === -1) {
-       
+
         setCartItems(prevItems => [...prevItems, newBooking]);
       }
     }
@@ -379,7 +390,7 @@ const CartCheckout = () => {
     if (route.params?.contactNumber) {
       setContact(route.params.contactNumber);
     } else {
-      
+
       AsyncStorage.getItem('user').then(storedUser => {
         if (storedUser) {
           try {
@@ -387,7 +398,7 @@ const CartCheckout = () => {
             if (userObj.contact) setContact(userObj.contact);
             else if (userObj.contactNumber) setContact(userObj.contactNumber);
           } catch (e) {
-            
+
           }
         }
       });
@@ -407,7 +418,7 @@ const CartCheckout = () => {
             geoRes.results[0].formatted_address
           ) {
             const address = geoRes.results[0].formatted_address;
-            
+
             const lines = address.split(',').map(line => line.trim());
             setAddressLine1(lines[0] || '');
             setAddressLine2(lines[1] || '');
@@ -418,10 +429,10 @@ const CartCheckout = () => {
         console.error('Error converting coordinates to address:', error);
       }
     };
-  
+
     fetchAndSetAddress();
   }, []);
-  
+
   useEffect(() => {
     const newTotal = cartItems.reduce((sum, item) => sum + item.cost, 0);
     setTotalCost(newTotal);
@@ -452,7 +463,7 @@ const CartCheckout = () => {
 
     setLoading(true);
     try {
-     
+
       for (const item of cartItems) {
         const requestData = {
           bookingId: item.bookingId,
@@ -474,7 +485,7 @@ const CartCheckout = () => {
         );
       }
 
-      
+
       setCartItems([]);
 
       Alert.alert('Success', 'All bookings confirmed successfully!', [
@@ -536,19 +547,100 @@ const CartCheckout = () => {
     );
   }
 
+  
+
+  const showMenu = () => {
+    if (menuRef.current) {
+      menuRef.current.measure((x, y, width, height, pageX, pageY) => {
+        setMenuAnchor({ x: pageX, y: pageY });
+        setMenuVisible(true);
+      });
+    }
+  };
+
+  const renderMenu = () => {
+    return (
+      <Menu
+        visible={menuVisible}
+        onDismiss={() => setMenuVisible(false)}
+        anchor={menuAnchor}
+        style={{ marginTop: 40 }}
+      >
+        <Menu.Item
+          onPress={() => {
+            setLanguageSubmenuVisible(true);
+            setMenuVisible(false);
+          }}
+          title={t('selectLanguage')}
+          leadingIcon="translate"
+        />
+        <Menu.Item
+          onPress={() => {
+            setMenuVisible(false);
+            handleLogout();
+          }}
+          title={t('logout')}
+          leadingIcon="logout"
+        />
+      </Menu>
+    );
+  };
+
+  const renderLanguageMenu = () => {
+    return (
+      <Menu
+        visible={languageSubmenuVisible}
+        onDismiss={() => setLanguageSubmenuVisible(false)}
+        anchor={menuAnchor}
+        style={{ marginTop: 40 }}
+      >
+        <Menu.Item
+          onPress={() => {
+            setLanguageSubmenuVisible(false);
+            changeLanguage('en');
+          }}
+          title="English"
+          //leadingIcon="check"
+          style={{ opacity: i18n.language === 'en' ? 1 : 0.6 }}
+        />
+        <Menu.Item
+          onPress={() => {
+            setLanguageSubmenuVisible(false);
+            changeLanguage('hi');
+          }}
+          title="हिंदी"
+          //leadingIcon="check"
+          style={{ opacity: i18n.language === 'hi' ? 1 : 0.6 }}
+        />
+        <Menu.Item
+          onPress={() => {
+            setLanguageSubmenuVisible(false);
+            changeLanguage('ma');
+          }}
+          title="मराठी"
+          //leadingIcon="check"
+          style={{ opacity: i18n.language === 'hi' ? 1 : 0.6 }}
+        />
+      </Menu>
+    );
+  };
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
         <Text style={[styles.headerTitle, { color: theme.colors.onPrimary }]}>Your Cart</Text>
-        <Button
-          mode="outlined"
-          onPress={handleLogout}
-          style={styles.logoutButton}
-          labelStyle={{ color: theme.colors.onPrimary }}
+        <TouchableOpacity
+          ref={menuRef}
+          onPress={showMenu}
+          style={styles.menuButton}
         >
-          Sign Out
-        </Button>
+          <MaterialCommunityIcons
+            name="dots-vertical"
+            size={24}
+            color={theme.colors.onPrimary}
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Main Content */}
@@ -657,6 +749,8 @@ const CartCheckout = () => {
           Confirm Payment ({totalCost}/- INR)
         </Button>
       </ScrollView>
+      {renderMenu()}
+      {renderLanguageMenu()}
     </SafeAreaView>
   );
 };
@@ -669,10 +763,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    padding: 24,
     paddingTop: 60,
-    paddingBottom: 20,
-    elevation: 4,
   },
   headerTitle: {
     fontSize: 24,
@@ -773,6 +865,9 @@ const styles = StyleSheet.create({
   },
   goToOrderButton: {
     width: '60%',
+  },
+  menuButton: {
+    padding: 8,
   },
 });
 

@@ -65,15 +65,15 @@
 //         service: service,
 //         pricePerservice: pricePerService,
 //       };
-      
+
 //       const response = await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/book', requestData, {
 //         headers: { 
 //           'Content-Type': 'application/json',
 //           'Authorization': `Bearer ${tokenAuth}`  
 //         },
 //       });
-      
-     
+
+
 //       navigation.dispatch(
 //         CommonActions.reset({
 //           index: 1,
@@ -175,6 +175,10 @@ type RouteParams = {
   service: 'cooking' | 'cleaning' | 'both';
   pricePerService: number;
   name: string;
+  softBookedSlots?: {
+    [day: string]: string;
+  };
+
 };
 
 type BookStackNavigationProp = StackNavigationProp<BookStackParamList, 'TimeSlotSelection'>;
@@ -212,6 +216,12 @@ const TimeSlotSelection: React.FC = () => {
     return slotsArrays.reduce((acc, curr) => acc.filter(time => curr.includes(time)));
   };
 
+  const isSoftBooked = (time: string): boolean => {
+    const { softBookedSlots } = route.params as RouteParams;
+    if (!softBookedSlots) return false;
+    return allowedDays.some(day => softBookedSlots[day] === time);
+  };
+
   const availableTimeSlots = commonSlots();
 
   const handleConfirmBooking = async () => {
@@ -228,15 +238,15 @@ const TimeSlotSelection: React.FC = () => {
         service: service,
         pricePerservice: pricePerService,
       };
-      
+
       const response = await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/book', requestData, {
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokenAuth}`  
+          'Authorization': `Bearer ${tokenAuth}`
         },
       });
-      
-      
+
+
       navigation.navigate('CartCheckout', {
         bookingId: response.data.BookingId,
         maidId: maid.maidId,
@@ -245,10 +255,10 @@ const TimeSlotSelection: React.FC = () => {
         type: bookingType,
         pricePerService: pricePerService,
         name: name || maid.name || 'Unknown Maid',
-        isNewBooking: true,  
-        
+        isNewBooking: true,
+
       });
-      
+
     } catch (error: unknown) {
       console.error('Error booking maid:', error);
       if (isAxiosError(error)) {
@@ -277,16 +287,23 @@ const TimeSlotSelection: React.FC = () => {
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {availableTimeSlots.length > 0 ? (
           <View style={styles.slotsContainer}>
-            {availableTimeSlots.map((time) => (
-              <Button
-                key={time}
-                mode={selectedTime === time ? 'contained' : 'outlined'}
-                onPress={() => setSelectedTime(time)}
-                style={styles.slotButton}
-              >
-                {time}
-              </Button>
-            ))}
+            {availableTimeSlots.map((time) => {
+              const softBooked = isSoftBooked(time);
+              return (
+                <Button
+                  key={time}
+                  mode={selectedTime === time ? 'contained' : 'outlined'}
+                  onPress={() => !softBooked && setSelectedTime(time)}
+                  style={[
+                    styles.slotButton,
+                    softBooked && styles.softBookedSlot
+                  ]}
+                  disabled={softBooked}
+                >
+                  {time} {softBooked ? '(Unavailable)' : ''}
+                </Button>
+              );
+            })}
           </View>
         ) : (
           <Text style={styles.noSlotsText}>No common time slots available.</Text>
@@ -307,12 +324,16 @@ const TimeSlotSelection: React.FC = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', padding: 16, paddingTop: 40 },
-  headerText: { fontSize: 22, fontWeight: 'bold', flex: 1, textAlign: 'center' },
+  headerText: { fontSize: 22, fontWeight: 'bold', flex: 1, textAlign: 'center', marginLeft: -40 }, 
   contentContainer: { padding: 16 },
   slotsContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' },
   slotButton: { margin: 8, paddingHorizontal: 16, paddingVertical: 8 },
   noSlotsText: { textAlign: 'center', marginVertical: 20, color: 'gray' },
   confirmButton: { marginTop: 24, alignSelf: 'center', width: '80%' },
+  softBookedSlot: { 
+    opacity: 0.5, 
+    backgroundColor: '#e0e0e0' 
+  },
 });
 
 export default TimeSlotSelection;

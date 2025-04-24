@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, Alert } from 'react-native';
-import { Text, Button, Card, Avatar, Divider, IconButton, useTheme } from 'react-native-paper';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { Text, Button, Card, Avatar, Divider, IconButton, useTheme, Menu } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import { TextInput } from 'react-native-paper';
 import { RouteProp } from '@react-navigation/native';
@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../locales/i18n';
 import Geolocation from '@react-native-community/geolocation';
 import { Platform, PermissionsAndroid } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type HomeScreenRouteProp = RouteProp<HomeStackParamList, 'Home'>;
 
@@ -71,13 +72,13 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
         }
       }
     };
-  
+
     const hasPermission = await requestLocationPermission();
     if (!hasPermission) {
       Alert.alert('Permission Denied', 'Location permission is required.');
       return;
     }
-  
+
     Geolocation.getCurrentPosition(
       async (position) => {
         const coords = {
@@ -109,7 +110,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
 
   const fetchBookings = async () => {
     try {
-      const storedToken = await user?.token; 
+      const storedToken = await user?.token;
       const response = await axios.get(
         'https://maid-in-india-nglj.onrender.com/api/maid/bookings',
         {
@@ -145,7 +146,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   }, []);
 
   const handleToggleBookings = async () => {
-    
+
     await fetchBookings();
     setShowBookings((prev) => !prev);
   };
@@ -171,7 +172,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
           },
         }
       );
-  
+
       Alert.alert('Profile Updated', 'Your profile has been updated successfully.');
       setIsEditing(false);
     } catch (error) {
@@ -179,7 +180,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
       Alert.alert('Error', 'Failed to update profile. Please try again.');
     }
   };
-  
+
   const handleCancelSubscription = async (bookingId: number, booking: Booking) => {
     try {
       const storedToken = user?.token;
@@ -195,17 +196,17 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
       );
       console.log('Cancel subscription response:', response.data);
 
-      
+
       Alert.alert(
         'Booking Cancelled',
         'Your booking has been cancelled successfully.',
         [{ text: 'OK' }]
       );
 
-      
+
       setRecentActivity(`Cancelled booking for ${booking.maidName}.`);
 
-     
+
       await fetchBookings();
     } catch (error) {
       console.error('Error cancelling subscription:', error);
@@ -214,7 +215,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
 
 
 
-  
+
   const groupSlots = (slot: { [day: string]: string }): { group: string; time: string }[] => {
     const groups: { [group: string]: string[] } = {
       'M-W-F': ['Monday', 'Wednesday', 'Friday'],
@@ -228,7 +229,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
       const requiredDays = groups[group];
 
       if (group === 'Daily') {
-       
+
         const allDaysHaveTime = requiredDays.every(day => slot[day] && slot[day].trim() !== '');
         if (allDaysHaveTime) {
           const uniqueTimes = Array.from(new Set(requiredDays.map(day => slot[day])));
@@ -237,7 +238,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
           }
         }
       } else {
-        
+
         const times = requiredDays
           .map(day => slot[day])
           .filter((time) => time !== undefined && time.trim() !== '');
@@ -248,23 +249,107 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
         }
       }
     }
-    
+
     const dailyGroup = result.find(r => r.group === 'Daily');
     return dailyGroup ? [dailyGroup] : result;
+  };
+
+  const menuRef = useRef<View>(null);
+  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
+  const [menuVisible, setMenuVisible] = useState<boolean>(false);
+  const [languageSubmenuVisible, setLanguageSubmenuVisible] = useState<boolean>(false);
+
+  const showMenu = () => {
+    if (menuRef.current) {
+      menuRef.current.measure((x, y, width, height, pageX, pageY) => {
+        setMenuAnchor({ x: pageX, y: pageY });
+        setMenuVisible(true);
+      });
+    }
+  };
+
+  const renderMenu = () => {
+    return (
+      <Menu
+        visible={menuVisible}
+        onDismiss={() => setMenuVisible(false)}
+        anchor={menuAnchor}
+        style={{ marginTop: 40 }}
+      >
+        <Menu.Item
+          onPress={() => {
+            setLanguageSubmenuVisible(true);
+            setMenuVisible(false);
+          }}
+          title={t('selectLanguage')}
+          leadingIcon="translate"
+        />
+        <Menu.Item
+          onPress={() => {
+            setMenuVisible(false);
+            handleLogout();
+          }}
+          title={t('logout')}
+          leadingIcon="logout"
+        />
+      </Menu>
+    );
+  };
+
+  const renderLanguageMenu = () => {
+    return (
+      <Menu
+        visible={languageSubmenuVisible}
+        onDismiss={() => setLanguageSubmenuVisible(false)}
+        anchor={menuAnchor}
+        style={{ marginTop: 40 }}
+      >
+        <Menu.Item
+          onPress={() => {
+            setLanguageSubmenuVisible(false);
+            changeLanguage('en');
+          }}
+          title="English"
+          //leadingIcon="check"
+          style={{ opacity: i18n.language === 'en' ? 1 : 0.6 }}
+        />
+        <Menu.Item
+          onPress={() => {
+            setLanguageSubmenuVisible(false);
+            changeLanguage('hi');
+          }}
+          title="हिंदी"
+          //leadingIcon="check"
+          style={{ opacity: i18n.language === 'hi' ? 1 : 0.6 }}
+        />
+        <Menu.Item
+          onPress={() => {
+            setLanguageSubmenuVisible(false);
+            changeLanguage('ma');
+          }}
+          title="मराठी"
+          //leadingIcon="check"
+          style={{ opacity: i18n.language === 'hi' ? 1 : 0.6 }}
+        />
+      </Menu>
+    );
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
         <Text style={[styles.welcomeText, { color: theme.colors.onPrimary }]}>{t('welcome')}</Text>
-        <Button
-          mode="outlined"
-          onPress={handleLogout}
-          style={styles.logoutButton}
-          labelStyle={{ color: theme.colors.onPrimary }}
+        <TouchableOpacity
+          ref={menuRef}
+          onPress={showMenu}
+          style={styles.menuButton}
         >
-          Sign Out
-        </Button>
+          <MaterialCommunityIcons
+            name="dots-vertical"
+            size={24}
+            color={theme.colors.onPrimary}
+          />
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
@@ -455,6 +540,8 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
           )}
         </Card>
       </ScrollView>
+      {renderMenu()}
+      {renderLanguageMenu()}
     </View>
   );
 };
@@ -526,7 +613,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 12,
     elevation: 2,
-    
+
   },
   activityCardContent: {
     padding: 16,
@@ -611,6 +698,9 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
     backgroundColor: theme.colors.surface,
+  },
+  menuButton: {
+    padding: 8,
   },
 });
 

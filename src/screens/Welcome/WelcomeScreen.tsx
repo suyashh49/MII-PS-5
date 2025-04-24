@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   backgroundImage: {
     position: 'absolute',
     top: -80,
-    left: 15,
+    left: 18,
     right: 20,
     bottom: 300,
     width: '100%',
