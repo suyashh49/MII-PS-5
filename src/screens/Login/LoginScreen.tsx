@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -12,7 +13,8 @@ const LoginScreen = () => {
   const { login } = useAuth();
   const theme = useTheme();
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const [localLoading, setLocalLoading] = useState(false); 
+  const [localLoading, setLocalLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleGoogleSignIn = async () => {
     setLocalLoading(true);
@@ -40,9 +42,11 @@ const LoginScreen = () => {
         <ActivityIndicator size="large" color={theme.colors.primary} />
       ) : (
         <>
-          <Text style={[styles.header, { color: theme.colors.onBackground }]}>Sign in</Text>
+          <Text style={[styles.header, { color: theme.colors.onBackground }]}>
+            {t('signIn')}
+          </Text>
           <Text style={[styles.subheader, { color: theme.colors.onSurfaceVariant }]}>
-            Use your Google Account
+            {t('useGoogleAccount')}
           </Text>
           <Card style={styles.card}>
             <Card.Content style={styles.cardContent}>
@@ -55,13 +59,13 @@ const LoginScreen = () => {
                   style={styles.googleIcon}
                 />
                 <Text style={[styles.googleButtonText, { color: '#000000' }]}>
-                  Sign in with Google
+                  {t('signInWithGoogle')}
                 </Text>
               </TouchableOpacity>
             </Card.Content>
           </Card>
           <Text style={[styles.privacyText, { color: theme.colors.onSurfaceVariant }]}>
-            By continuing, you agree to our terms of service and privacy policy.
+            {t('termsAgreement')}
           </Text>
         </>
       )}

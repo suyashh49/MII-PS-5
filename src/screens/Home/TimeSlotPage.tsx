@@ -236,7 +236,7 @@ const TimeSlotSelection: React.FC = () => {
         },
       });
       
-      // Add to cart using navigate instead of reset to preserve navigation stack
+      
       navigation.navigate('CartCheckout', {
         bookingId: response.data.BookingId,
         maidId: maid.maidId,
@@ -245,7 +245,7 @@ const TimeSlotSelection: React.FC = () => {
         type: bookingType,
         pricePerService: pricePerService,
         name: name || maid.name || 'Unknown Maid',
-        isNewBooking: true,  // Flag to indicate this is a new booking
+        isNewBooking: true,  
         
       });
       

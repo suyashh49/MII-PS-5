@@ -4,12 +4,14 @@ import { Text, Button, useTheme, Card, Divider, Avatar, IconButton } from 'react
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Profile'>;
 
 const ProfileScreen = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const onBackPress = () => {
@@ -33,16 +35,16 @@ const ProfileScreen = () => {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text variant="headlineMedium" style={[styles.title, { color: theme.colors.onBackground }]}>
-          Choose your role
+          {t('chooseRole')}
         </Text>
         <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
           <Card.Content style={styles.cardContent}>
             <Avatar.Icon size={64} icon="account" color={theme.colors.onSurface} style={{ backgroundColor: theme.colors.surfaceVariant }} />
             <View style={styles.cardInfo}>
-              <Text style={[styles.roleTitle, { color: theme.colors.onBackground }]}>User Login</Text>
-              <Text style={[styles.roleDesc, { color: theme.colors.onSurfaceVariant }]}>Access all customer features</Text>
+              <Text style={[styles.roleTitle, { color: theme.colors.onBackground }]}>{t('userLogin')}</Text>
+              <Text style={[styles.roleDesc, { color: theme.colors.onSurfaceVariant }]}>{t('userFeatures')}</Text>
               <Button mode="contained" onPress={handleGetStarted1} style={styles.button} labelStyle={{ color: theme.colors.onPrimary }}>
-                Login as User
+                {t('loginAsUser')}
               </Button>
             </View>
           </Card.Content>
@@ -51,10 +53,10 @@ const ProfileScreen = () => {
           <Card.Content style={styles.cardContent}>
             <Avatar.Icon size={64} icon="account-tie" color={theme.colors.onSurface} style={{ backgroundColor: theme.colors.surfaceVariant }} />
             <View style={styles.cardInfo}>
-              <Text style={[styles.roleTitle, { color: theme.colors.onBackground }]}>Maid Login</Text>
-              <Text style={[styles.roleDesc, { color: theme.colors.onSurfaceVariant }]}>Access maid-specific features</Text>
+              <Text style={[styles.roleTitle, { color: theme.colors.onBackground }]}>{t('maidLogin')}</Text>
+              <Text style={[styles.roleDesc, { color: theme.colors.onSurfaceVariant }]}>{t('maidFeatures')}</Text>
               <Button mode="contained" onPress={handleGetStarted2} style={styles.button} labelStyle={{ color: theme.colors.onPrimary }}>
-                Login as Maid
+                {t('loginAsMaid')}
               </Button>
             </View>
           </Card.Content>
@@ -67,7 +69,6 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    
     padding: 10,
   },
   scrollContent: {
