@@ -64,6 +64,10 @@ export type BookStackParamList = {
     pricePerService: number;
     name: string;
     contactNumber: string;
+    softBookedSlots?: {
+      [day: string]: string;
+    };
+
   };
   Feedback: undefined;
   CartCheckout: { bookingId: any; maidId: number; service: "cooking" | "cleaning" | "both"; slot: string; type: number; pricePerService: number; name: string; isNewBooking: boolean; };
