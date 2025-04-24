@@ -45,10 +45,10 @@ const HomeScreenMaid: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [items, setItems] = useState<{ [date: string]: any[] }>({});
 
-  // State to track which booking is expanded
+  
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
   
-  // Animation values for card expansion
+  
   const [cardAnimations, setCardAnimations] = useState<{[key: string]: Animated.Value}>({});
 
 
@@ -155,42 +155,59 @@ const HomeScreenMaid: React.FC = () => {
     }
   };
 
-  const renderItem = (item: any) => {
-    const isExpanded = expandedBookingId === item.id;
-
-    return (
-      <TouchableOpacity 
-        onPress={() => toggleCardExpansion(item.id)}
-        activeOpacity={0.8}
-        style={[
-          styles.item,
-          isExpanded && styles.expandedItem
-        ]}
-      >
-        <View style={styles.itemContent}>
-          <Text style={styles.itemText}>{item.name}</Text>
-          <Text style={styles.itemText}>Time: {item.time}</Text>
-          <Text style={styles.itemText}>Location: {item.location || 'N/A'}</Text>
-          <Text style={styles.itemText}>Contact: {item.userContact}</Text>
-          
-          {isExpanded && (
-            <Button 
-              mode="contained" 
-              onPress={() => openDirections(item.location)}
-              style={styles.directionsButton}
-              icon="map-marker-radius"
-            >
-              Show Directions
-            </Button>
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
+    const renderItem = (item: any) => {
+      const isExpanded = expandedBookingId === item.id;
+    
+      return (
+        <TouchableOpacity 
+          onPress={() => toggleCardExpansion(item.id)}
+          activeOpacity={0.8}
+          style={[
+            styles.item,
+            isExpanded && styles.expandedItem
+          ]}
+        >
+          <View style={styles.itemContent}>
+            <Text style={styles.itemText}>{item.name}</Text>
+            <Text style={styles.itemText}>Time: {item.time}</Text>
+            <Text style={styles.itemText}>Location: {item.location || 'N/A'}</Text>
+            <Text style={styles.itemText}>Contact: {item.userContact}</Text>
+            
+            {isExpanded && (
+              <>
+                <Button 
+                  mode="contained" 
+                  onPress={() => openDirections(item.location)}
+                  style={styles.directionsButton}
+                  icon="map-marker-radius"
+                >
+                  Show Directions
+                </Button>
+                <Button 
+                  mode="contained" 
+                  onPress={() => {
+                    const phoneNumber = item.userContact;
+                    if (!phoneNumber || phoneNumber === 'N/A') {
+                      Alert.alert('Error', 'No contact information available');
+                      return;
+                    }
+                    Linking.openURL(`tel:${phoneNumber}`);
+                  }}
+                  style={[styles.directionsButton, {marginTop: 8, backgroundColor: '#4CAF50'}]}
+                  icon="phone"
+                >
+                  Call User
+                </Button>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+      );
+    };
 
   const handleSignOut = () => navigation.navigate('Welcome');
 
-  // Services Dropdown Component
+  
   const ServicesDropdown = ({
     cleaning,
     cooking,
@@ -203,7 +220,7 @@ const HomeScreenMaid: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const theme = useTheme();
 
-    // Get selected services text for display
+    
     const getSelectedServicesText = () => {
       const selected = [];
       if (cleaning) selected.push('Cleaning');
@@ -297,10 +314,10 @@ const HomeScreenMaid: React.FC = () => {
             pricePerService = ''
           } = data || {};
 
-          // Extract time slots from timeAvailable structure
+         
           let selectedTimeSlots: string[] = [];
           if (timeAvailable && typeof timeAvailable === 'object' && Object.keys(timeAvailable).length > 0) {
-            // Get time slots from the first day that has them
+            
             const firstDayWithSlots = Object.keys(timeAvailable).find(day =>
               Array.isArray(timeAvailable[day]) && timeAvailable[day].length > 0
             );
@@ -330,7 +347,7 @@ const HomeScreenMaid: React.FC = () => {
         ? profile.selectedTimeSlots.filter((t: string) => t !== time)
         : [...profile.selectedTimeSlots, time];
 
-      // Update the profile state with new time slots
+     
       setProfile({
         ...profile,
         selectedTimeSlots: updatedTimeSlots
@@ -349,14 +366,14 @@ const HomeScreenMaid: React.FC = () => {
         .then(token => {
           if (!token) throw new Error('No token');
 
-          // Create timeAvailable object with the selected time slots for all days
+          
           const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
           const timeAvailable = days.reduce((acc, day) => {
             acc[day] = profile.selectedTimeSlots;
             return acc;
           }, {} as { [key: string]: string[] });
 
-          // Pass boolean values directly as expected by the backend
+          
           const body = {
             name: profile.name,
             contact: profile.contact,
@@ -392,7 +409,7 @@ const HomeScreenMaid: React.FC = () => {
           label="Contact Number"
           value={profile.contact}
           onChangeText={text => {
-            // Allow only "+91" followed by up to 10 digits
+            
             if (/^\+91\d{0,10}$/.test(text) || text === '') {
               setProfile({ ...profile, contact: text });
             }
@@ -400,7 +417,7 @@ const HomeScreenMaid: React.FC = () => {
           style={styles.input}
           placeholder="+911234567890"
           keyboardType="phone-pad"
-          maxLength={13} // +91 plus 10 digits
+          maxLength={13} 
         />
 
         {/* Time Available Picker */}
@@ -464,15 +481,14 @@ const HomeScreenMaid: React.FC = () => {
   const EarningsRoute = () => {
     const theme = useTheme();
     const [loading, setLoading] = useState(true);
-    const [dateRange, setDateRange] = useState('week'); // 'week', 'month', 'year'
-    const [selectedTab, setSelectedTab] = useState('summary'); // 'summary', 'details', 'analysis'
+    const [dateRange, setDateRange] = useState('week'); 
+    const [selectedTab, setSelectedTab] = useState('summary'); 
 
-    // Reuse bookings state from parent component instead of fetching again
-    // Calculate earnings data
+    
     const earningsData = useMemo(() => {
       if (!bookings || bookings.length === 0) return null;
 
-      // Get current period start and end dates based on selected range
+      
       const now = dayjs();
       let startDate;
 
@@ -484,17 +500,17 @@ const HomeScreenMaid: React.FC = () => {
         startDate = now.subtract(365, 'day');
       }
 
-      // Calculate total earnings from bookings
+      
       const totalEarnings = bookings.reduce((sum, booking) => sum + (booking.cost || 0), 0);
 
-      // Count bookings by service type
+      
       const serviceBreakdown = bookings.reduce((acc: Record<string, number>, booking) => {
         const service = booking.service || 'other';
         acc[service] = (acc[service] || 0) + 1;
         return acc;
       }, {});
 
-      // Generate daily earnings data
+      
       const dailyData = [];
       const daysInPeriod = dateRange === 'week' ? 7 : dateRange === 'month' ? 30 : 12;
       const labels = [];
@@ -505,7 +521,7 @@ const HomeScreenMaid: React.FC = () => {
           ? now.subtract(i, 'month').format('MMM')
           : now.subtract(i, 'day').format('DD');
 
-        // Count bookings on this date/month (using simulated data)
+       
         const count = Math.floor(Math.random() * 3); // Simulating 0-2 bookings per day
         const dailyEarning = count * (bookings[0]?.cost || 800); // Use first booking cost or default to 800
 
@@ -513,10 +529,10 @@ const HomeScreenMaid: React.FC = () => {
         data.unshift(dailyEarning);
       }
 
-      // Calculate upcoming earnings (next 7 days)
+     
       const upcomingEarnings = bookings.length * (bookings[0]?.cost || 0) / 4; // Simple estimation
 
-      // Prepare data for pie chart
+      
       const pieChartData = Object.keys(serviceBreakdown).map((key, index) => {
         const colors = ['#FF8A65', '#64B5F6', '#81C784', '#FFD54F'];
         return {
@@ -528,7 +544,7 @@ const HomeScreenMaid: React.FC = () => {
         };
       });
 
-      // Service earnings for bar chart
+      
       const barChartData = {
         labels: ['Cooking', 'Cleaning'],
         datasets: [
@@ -554,7 +570,7 @@ const HomeScreenMaid: React.FC = () => {
       };
     }, [bookings, dateRange]);
 
-    // For the payment history table
+    
     const renderPaymentHistory = () => {
       if (!bookings || bookings.length === 0) {
         return (
@@ -1252,6 +1268,11 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
+  },
+  callButton: {
+    marginTop: 10,
+    borderRadius: 4,
+    backgroundColor: '#4CAF50' 
   },
 });
 export default HomeScreenMaid;

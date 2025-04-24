@@ -337,7 +337,7 @@ const CartCheckout = () => {
   const [totalCost, setTotalCost] = useState(0);
 
   useEffect(() => {
-    // Process the incoming booking if it exists
+    
     if (route.params) {
       const { bookingId, service, slot, type, pricePerService } = route.params as {
         bookingId: number;
@@ -348,7 +348,7 @@ const CartCheckout = () => {
         contactNumber: string;
       };
 
-      // Fetch contact number from params or AsyncStorage
+      
 
       const maidName = (route.params as any).maid?.name || (route.params as any).name || 'Unknown Maid';
 
@@ -365,11 +365,11 @@ const CartCheckout = () => {
         name: maidName
       };
 
-      // Check if booking already exists in cart
+      
       const existingBookingIndex = cartItems.findIndex(item => item.bookingId === bookingId);
 
       if (existingBookingIndex === -1) {
-        // Add new booking to cart
+       
         setCartItems(prevItems => [...prevItems, newBooking]);
       }
     }
@@ -379,7 +379,7 @@ const CartCheckout = () => {
     if (route.params?.contactNumber) {
       setContact(route.params.contactNumber);
     } else {
-      // Try to get contact from user object in AsyncStorage
+      
       AsyncStorage.getItem('user').then(storedUser => {
         if (storedUser) {
           try {
@@ -387,7 +387,7 @@ const CartCheckout = () => {
             if (userObj.contact) setContact(userObj.contact);
             else if (userObj.contactNumber) setContact(userObj.contactNumber);
           } catch (e) {
-            // fallback: do nothing
+            
           }
         }
       });
@@ -407,7 +407,7 @@ const CartCheckout = () => {
             geoRes.results[0].formatted_address
           ) {
             const address = geoRes.results[0].formatted_address;
-            // Split address into lines
+            
             const lines = address.split(',').map(line => line.trim());
             setAddressLine1(lines[0] || '');
             setAddressLine2(lines[1] || '');
@@ -421,7 +421,7 @@ const CartCheckout = () => {
   
     fetchAndSetAddress();
   }, []);
-  // Calculate total cost whenever cart items change
+  
   useEffect(() => {
     const newTotal = cartItems.reduce((sum, item) => sum + item.cost, 0);
     setTotalCost(newTotal);
@@ -452,7 +452,7 @@ const CartCheckout = () => {
 
     setLoading(true);
     try {
-      // Make sequential requests for each booking
+     
       for (const item of cartItems) {
         const requestData = {
           bookingId: item.bookingId,
@@ -474,7 +474,7 @@ const CartCheckout = () => {
         );
       }
 
-      // Clear cart after successful payment
+      
       setCartItems([]);
 
       Alert.alert('Success', 'All bookings confirmed successfully!', [

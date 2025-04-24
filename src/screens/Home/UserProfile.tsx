@@ -24,7 +24,7 @@ const UserProfile = () => {
   const [contact, setContact] = useState(user?.contact || '');
   const [gender, setGender] = useState('Male');
 
-  const validatePhone = (phone: string) => /^[6-9]\d{9}$/.test(phone); // Indian number regex
+  const validatePhone = (phone: string) => /^[6-9]\d{9}$/.test(phone); 
 
   const handleSave = async () => {
     if (!name || !contact || !gender) {
@@ -65,8 +65,7 @@ const UserProfile = () => {
 
       Alert.alert('Profile Updated', 'Welcome! Your profile is complete.');
       
-      // Update the auth context to indicate profile creation is complete
-      // This will trigger MainNavigator to show BottomTabNavigator with Home screen
+     
       setProfileCreated(true);
 
     } catch (error) {
