@@ -29,7 +29,6 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const { user, logout } = useAuth();
   const userName = user?.name || '';
   const email = user?.email || '';
-  const photoUrl = user?.photoUrl || '';
   const theme = useTheme();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [showBookings, setShowBookings] = useState(false);
@@ -37,7 +36,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const [editableName, setEditableName] = useState(user?.name || '');
   const [editableContact, setEditableContact] = useState(user?.contact || '');
   const [editableAddress, setEditableAddress] = useState(user?.address || '');
-
+  const [photoUrl,setPhotoUrl] = useState(user?.photoUrl || '');
   const [recentActivity, setRecentActivity] = useState<string>('You signed in just now');
   const [showActivity, setShowActivity] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -130,12 +129,15 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        
         const storedUser = await AsyncStorage.getItem('user');
+
         if (storedUser) {
           const parsedUser: User = JSON.parse(storedUser);
           setEditableName(parsedUser.name);
           setEditableContact(parsedUser.contact);
           setEditableAddress(parsedUser.address);
+          setPhotoUrl(parsedUser?.photoUrl);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -357,7 +359,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
           <Card.Content style={styles.profileCardContent}>
             <Avatar.Image
               size={80}
-              source={{ uri: photoUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(userName) }}
+              source={{ uri: user?.photoUrl || 'https://via.placeholder.com/80' }}
             />
             <View style={styles.userInfo}>
               <Text style={[styles.userName, { color: theme.colors.onBackground }]}>{editableName}</Text>

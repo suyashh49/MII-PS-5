@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { TextInput, Button, Text, RadioButton, useTheme } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Alert ,TouchableOpacity} from 'react-native';
+import { TextInput, Button, Text, RadioButton, useTheme, Avatar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -23,8 +26,23 @@ const UserProfile = () => {
   const [name, setName] = useState(user?.name || '');
   const [contact, setContact] = useState(user?.contact || '');
   const [gender, setGender] = useState('Male');
+  const [photoUrl, setPhotoUrl] = useState(user?.photoUrl || '');
 
   const validatePhone = (phone: string) => /^[6-9]\d{9}$/.test(phone); 
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setPhotoUrl(uri);
+    }
+  };
 
   const handleSave = async () => {
     if (!name || !contact || !gender) {
@@ -43,10 +61,12 @@ const UserProfile = () => {
     }
 
     try {
+      console.log(photoUrl);
       const response = await axios.post(`${API_URL}/api/auth/update`, {
         name:name,
         contactNumber:contact,
         gender:gender,
+        photoUrl : photoUrl,
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -59,6 +79,7 @@ const UserProfile = () => {
         name,
         contact,
         gender,
+        photoUrl
       };
 
       await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
@@ -77,7 +98,17 @@ const UserProfile = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>Complete Your Profile</Text>
-
+      <TouchableOpacity onPress={pickImage} style={{ alignSelf: 'center', marginBottom: 16 }}>
+        <Avatar.Image
+          size={80}
+          source={{
+            uri: photoUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name),
+          }}
+        />
+        <Text style={{ textAlign: 'center', marginTop: 8, color: theme.colors.primary }}>
+          Tap to change photo
+        </Text>
+      </TouchableOpacity>
       <TextInput
         label="Full Name"
         value={name}
@@ -113,40 +144,41 @@ const UserProfile = () => {
       >
         Save & Continue
       </Button>
+      
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  radioRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  button: {
-    marginTop: 24,
-  },
-  buttonContent: {
-    height: 50,
-  },
-});
+    container: {
+      padding: 20,
+      flexGrow: 1,
+      justifyContent: 'center',
+    },
+    header: {
+      fontSize: 22,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      textAlign: 'center',
+    },
+    input: {
+      marginBottom: 16,
+    },
+    label: {
+      fontSize: 16,
+      marginBottom: 8,
+    },
+    radioRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    button: {
+      marginTop: 24,
+    },
+    buttonContent: {
+      height: 50,
+    },
+  });
 
 export default UserProfile;
