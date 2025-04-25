@@ -5,7 +5,7 @@ import { Text, Button, Card, Avatar, useTheme, Menu } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Geocoder from 'react-native-geocoding';
 import Geolocation from '@react-native-community/geolocation';
@@ -33,6 +33,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 type BookStackNavigationProp = StackNavigationProp<BookStackParamList, 'BookMaid'>;
+type BookMaidRouteProp = RouteProp<BookStackParamList, 'BookMaid'>;
 
 const isAxiosError = (error: unknown): error is AxiosError => {
   return (
@@ -66,8 +67,13 @@ const BookMaid: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState<boolean>(false);
+  const [showCurrentLocation, setShowCurrentLocation] = useState<boolean>(false);
   const [bookingType, setBookingType] = useState<number | null>(null);
   const [selectedService, setSelectedService] = useState<{ [maidId: number]: 'cooking' | 'cleaning' | 'both' }>({});
+  const [hasSearched, setHasSearched] = useState<boolean>(false);  
+  const route = useRoute<BookMaidRouteProp>();
+  const preserveState = route.params?.preserveState ?? false;
+  const [address, setAddress] = useState<string>('');
   
 
   const tokenForAuth = user?.token || storedToken;
@@ -92,9 +98,11 @@ const BookMaid: React.FC = () => {
   // Fetch bookings on focus
   useFocusEffect(
     React.useCallback(() => {
-      resetState();
+      if (!preserveState) {
+        resetState();
+      }
       fetchBookings();
-    }, [tokenForAuth])
+    }, [tokenForAuth, preserveState])
   );
 
   // Fetch bookings on token change
@@ -179,6 +187,7 @@ const BookMaid: React.FC = () => {
     }
 
     setLoading(true);
+    setHasSearched(true); // Add this to track search has been performed
 
     try {
       const requestData: Partial<SearchRequestData> = {
@@ -256,7 +265,7 @@ const BookMaid: React.FC = () => {
           }
         }
       );
-
+      console.log('Soft booking response:', response.data);
       // Navigate to time slot selection with soft booking data
       navigation.navigate('TimeSlotSelection', {
         maid,
@@ -265,7 +274,7 @@ const BookMaid: React.FC = () => {
         pricePerService: Number(maid.pricePerService),
         name: maid.name || t('unnamed'),
         contactNumber: user?.contact || t('contactNotProvided'),
-        softBookedSlots: response.data[maid.maidId.toString()] || {}
+        softBookedSlots: response.data[maid.maidId.toString()] || []  // Change to correctly pass the array
       });
     } catch (error) {
       console.error('Error checking soft bookings:', error);
@@ -300,6 +309,9 @@ const BookMaid: React.FC = () => {
       name: maid.name || t('unnamed'),
       contactNumber: user?.contact || t('contactNotProvided')
     });
+
+
+
   };
 
   const handleBookingTypeChange = (type: number) => {
@@ -380,9 +392,9 @@ const BookMaid: React.FC = () => {
       Alert.alert(t('permissionDenied'), t('requireLocationPerm'));
       return;
     }
-
+    
     setIsUsingCurrentLocation(true);
-
+   
     Geolocation.getCurrentPosition(
       position => {
         const { latitude, longitude } = position.coords;
@@ -394,6 +406,7 @@ const BookMaid: React.FC = () => {
           .then(json => {
             const addressComponent = json.results[0].formatted_address;
             console.log(addressComponent);
+            setAddress(addressComponent);
             setLocation(addressComponent);
             setIsUsingCurrentLocation(false);
           })
@@ -410,7 +423,10 @@ const BookMaid: React.FC = () => {
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
+
+    setShowCurrentLocation(true);
   };
+
   const menuRef = useRef<View>(null);
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
@@ -580,9 +596,18 @@ const BookMaid: React.FC = () => {
         </View>
         {isUsingCurrentLocation && (
           <Text style={styles.currentLocationText}>
-            {t('Finding Current Location, Select Booking type')}
+            {t('Finding Your Current Location')}
           </Text>
         )}
+
+        {/*Show your current location*/}
+        {showCurrentLocation && (
+          <Text style={styles.currentLocationText}>
+           {address}
+          </Text>
+        )}
+
+        {/* Booking Type Selector */}
 
         <View style={styles.typeSelector}>
           <Text style={styles.typeSelectorLabel}>

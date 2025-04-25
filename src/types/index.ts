@@ -56,7 +56,7 @@ export type HomeStackParamList = {
 };
 
 export type BookStackParamList = {
-  BookMaid: undefined;
+  BookMaid: { preserveState?: boolean } | undefined;
   TimeSlotSelection: {
     maid: Maid;
     bookingType: number; 
@@ -66,7 +66,7 @@ export type BookStackParamList = {
     contactNumber: string;
     softBookedSlots?: {
       [day: string]: string;
-    };
+    }[];
 
   };
   Feedback: undefined;

@@ -6,6 +6,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BookingConfirmRequestData, BookStackParamList, ErrorResponse, Maid } from '../../types/index';
 import { useAuth } from '../../hooks/useAuth';
+import { CommonActions } from '@react-navigation/native';
 
 type RouteParams = {
   maid: Maid;
@@ -56,8 +57,17 @@ const TimeSlotSelection: React.FC = () => {
 
   const isSoftBooked = (time: string): boolean => {
     const { softBookedSlots } = route.params as RouteParams;
-    if (!softBookedSlots) return false;
-    return allowedDays.some(day => softBookedSlots[day] === time);
+    if (!softBookedSlots || !Array.isArray(softBookedSlots) || softBookedSlots.length === 0) return false;
+    
+    // Check if time exists in any of the soft booking objects
+    for (const bookingObj of softBookedSlots) {
+      for (const day of allowedDays) {
+        if (bookingObj[day] === time) {
+          return true;
+        }
+      }
+    }
+    return false;
   };
 
   const availableTimeSlots = commonSlots();
@@ -83,18 +93,17 @@ const TimeSlotSelection: React.FC = () => {
           'Authorization': `Bearer ${tokenAuth}`
         },
       });
-
-
+      
       navigation.navigate('CartCheckout', {
         bookingId: response.data.BookingId,
-        maidId: maid.maidId,
-        service: service,
-        slot: selectedTime,
-        type: bookingType,
-        pricePerService: pricePerService,
-        name: name || maid.name || 'Unknown Maid',
-        isNewBooking: true,
-
+              maidId: maid.maidId,
+              service,
+              slot: selectedTime,
+              type: bookingType,
+              pricePerService,
+              name: name || maid.name || 'Unknown Maid',
+              
+              isNewBooking: true,
       });
 
     } catch (error: unknown) {
@@ -110,17 +119,22 @@ const TimeSlotSelection: React.FC = () => {
     }
   };
 
+  const handleBackToSearch = () => {
+    navigation.navigate('BookMaid', { preserveState: true });
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
         <IconButton
           icon="arrow-left"
           iconColor={theme.colors.onPrimary}
-          onPress={() => navigation.goBack()}
+          onPress={handleBackToSearch}
         />
         <Text style={[styles.headerText, { color: theme.colors.onPrimary }]}>
           Select a Time Slot
         </Text>
+        <View style={{ width: 48 }} />
       </View>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {availableTimeSlots.length > 0 ? (
@@ -148,7 +162,10 @@ const TimeSlotSelection: React.FC = () => {
         )}
         <Button
           mode="contained"
-          onPress={handleConfirmBooking}
+          onPress={() => {
+            handleConfirmBooking();
+            handleBackToSearch();
+          }}
           loading={bookingInProgress}
           style={styles.confirmButton}
         >
@@ -161,8 +178,9 @@ const TimeSlotSelection: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 16, paddingTop: 40 },
-  headerText: { fontSize: 22, fontWeight: 'bold', flex: 1, textAlign: 'center', marginLeft: -40 }, 
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 40 },
+  headerText: { 
+    fontSize: 22, fontWeight: 'bold', flex: 1, textAlign: 'center'}, 
   contentContainer: { padding: 16 },
   slotsContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' },
   slotButton: { margin: 8, paddingHorizontal: 16, paddingVertical: 8 },
