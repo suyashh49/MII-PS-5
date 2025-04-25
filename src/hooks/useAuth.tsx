@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             id: userInfo.user.id,
             name: userProfile.data.name || userInfo.user.name,
             email: userInfo.user.email,
-            photoUrl: userInfo.user.picture,
+            photoUrl: userProfile.data.photoUrl || userInfo.user.picture,
             token: userInfo.user.token,
             contact: userProfile.data?.contact || '',
             address: userProfile.data?.address || '',

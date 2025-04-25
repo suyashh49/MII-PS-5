@@ -20,6 +20,7 @@
     "dayjs": "^1.11.13",
     "expo": "~52.0.37",
     "expo-auth-session": "^6.0.3",
+    "expo-file-system": "^18.0.12",
     "expo-image-picker": "~16.0.6",
     "expo-random": "^14.0.1",
     "expo-router": "~4.0.17",
