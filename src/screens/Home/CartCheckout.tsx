@@ -50,7 +50,6 @@ const CartCheckout = () => {
   const [languageSubmenuVisible, setLanguageSubmenuVisible] = useState<boolean>(false);
 
   useEffect(() => {
-
     if (route.params) {
       const { bookingId, service, slot, type, pricePerService } = route.params as {
         bookingId: number;
@@ -61,10 +60,7 @@ const CartCheckout = () => {
         contactNumber: string;
       };
 
-
-
       const maidName = (route.params as any).maid?.name || (route.params as any).name || 'Unknown Maid';
-
       const daysCount = type === 3 ? 30 : (type === 1 || type === 2 ? 12 : 1);
       const cost = pricePerService * daysCount;
 
@@ -78,15 +74,18 @@ const CartCheckout = () => {
         name: maidName
       };
 
-
-      const existingBookingIndex = cartItems.findIndex(item => item.bookingId === bookingId);
-
-      if (existingBookingIndex === -1) {
-
-        setCartItems(prevItems => [...prevItems, newBooking]);
-      }
+      setCartItems(prevItems => {
+        const existingBookingIndex = prevItems.findIndex(item => item.bookingId === bookingId);
+        if (existingBookingIndex === -1) {
+          // Item doesn't exist, add it to cart
+          return [...prevItems, newBooking];
+        } else {
+          // Item exists, return unchanged cart
+          return prevItems;
+        }
+      });
     }
-  }, [route.params]);
+  }, [route.params?.bookingId]); // Only trigger when bookingId changes
 
   useEffect(() => {
     if (route.params?.contactNumber) {
@@ -146,8 +145,39 @@ const CartCheckout = () => {
     await logout();
   };
 
-  const handleRemoveItem = (bookingId: number) => {
-    setCartItems(prevItems => prevItems.filter(item => item.bookingId !== bookingId));
+  const handleSoftCancel = async (bookingId: number) => {
+    try {
+      await axios.post(
+        'https://maid-in-india-nglj.onrender.com/api/maid/delete-soft',
+        { bookingId },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // on success, remove from cart
+      handleRemoveItem(bookingId);
+    } catch (err) {
+      console.error('Soft-cancel failed:', err);
+      Alert.alert('Error', 'Could not cancel booking.');
+    }
+  };
+
+  const handleRemoveItem = async (bookingId: number) => {
+    const updatedCart = cartItems.filter(item => item.bookingId !== bookingId);
+    setCartItems(updatedCart);
+
+    try {
+      if (updatedCart.length > 0) {
+        await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCart));
+      } else {
+        await AsyncStorage.removeItem('cartItems');
+      }
+    } catch (error) {
+      console.error('Failed to update saved cart', error);
+    }
   };
 
   const handleConfirmPayment = async () => {
@@ -189,8 +219,9 @@ const CartCheckout = () => {
 
 
       setCartItems([]);
+      await clearSavedCart(); // Clear saved cart
 
-      Alert.alert('Success', 'All bookings confirmed successfully!', [
+      Alert.alert('', 'All bookings confirmed successfully!', [
         {
           text: 'OK',
           onPress: () => {
@@ -211,6 +242,46 @@ const CartCheckout = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCart = async () => {
+    try {
+      const savedCart = await AsyncStorage.getItem('cartItems');
+      if (savedCart) {
+        setCartItems(JSON.parse(savedCart));
+      }
+    } catch (error) {
+      console.error('Failed to load cart from storage', error);
+    }
+  };
+
+  // Save cart to AsyncStorage whenever it changes
+  useEffect(() => {
+    const saveCart = async () => {
+      try {
+        await AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
+      } catch (error) {
+        console.error('Failed to save cart to storage', error);
+      }
+    };
+
+    if (cartItems.length > 0) {
+      saveCart();
+    }
+  }, [cartItems]);
+
+  // Load cart when component mounts
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  // Clear cart from AsyncStorage after successful checkout
+  const clearSavedCart = async () => {
+    try {
+      await AsyncStorage.removeItem('cartItems');
+    } catch (error) {
+      console.error('Failed to clear saved cart', error);
     }
   };
 
@@ -249,7 +320,7 @@ const CartCheckout = () => {
     );
   }
 
-  
+
 
   const showMenu = () => {
     if (menuRef.current) {
@@ -408,8 +479,8 @@ const CartCheckout = () => {
                 <IconButton
                   {...props}
                   icon="delete"
-                  onPress={() => handleRemoveItem(item.bookingId)}
                   iconColor={theme.colors.error}
+                  onPress={() => handleSoftCancel(item.bookingId)}
                 />
               )}
             />
