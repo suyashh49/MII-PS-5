@@ -162,7 +162,10 @@ const TimeSlotSelection: React.FC = () => {
         )}
         <Button
           mode="contained"
-          onPress={handleConfirmBooking}
+          onPress={() => {
+            handleConfirmBooking();
+            handleBackToSearch();
+          }}
           loading={bookingInProgress}
           style={styles.confirmButton}
         >
