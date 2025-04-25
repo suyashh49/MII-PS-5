@@ -9,7 +9,11 @@ export type RootStackParamList = {
   //   userName: string;
   //   email: string;
   // };
-  Home: undefined;
+  Home: {
+    showBookings?: boolean;
+    showActivity?: boolean;
+    recentActivity?: string;
+  };
   Feedback: { bookingId: number, rating: number };
   MaidProfile: undefined;
   KYCDetailsMaid: {
@@ -49,6 +53,9 @@ export type HomeStackParamList = {
   Home: {
     userName: string;
     email: string;
+    showBookings?: boolean;
+    showActivity?: boolean;
+    recentActivity?: string;
   };
   Feedback: {
     bookingId: number;

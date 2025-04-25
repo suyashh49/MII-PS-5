@@ -102,6 +102,18 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   };
 
   useEffect(() => {
+    if (route.params?.showBookings) {
+      setShowBookings(true);
+    }
+    if (route.params?.showActivity) {
+      handleToggleBookings();
+    }
+    if (route.params?.recentActivity) {
+      setRecentActivity(route.params.recentActivity);
+    }
+  }, [route.params]);
+
+  useEffect(() => {
     getMyLocation(setCoordinates);
   }, []);
 

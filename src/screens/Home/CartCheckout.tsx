@@ -221,11 +221,15 @@ const CartCheckout = () => {
       setCartItems([]);
       await clearSavedCart(); // Clear saved cart
 
-      Alert.alert('', 'All bookings confirmed successfully!', [
+      Alert.alert('', 'Booking confirmed successfully!', [
         {
           text: 'OK',
           onPress: () => {
-            navigation.navigate('Home');
+            navigation.navigate('Home', {
+              showBookings: true,
+              showActivity: true,
+              recentActivity: 'Booking confirmed successfully!',
+            });
           },
         },
       ]);

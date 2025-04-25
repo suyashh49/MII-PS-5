@@ -98,6 +98,7 @@ const HomeScreenMaid: React.FC = () => {
               time: b.slot[dayName],
               location: b.userLocation,
               userContact: b.userContact,
+              service: b.service,
             });
           }
         }
@@ -172,7 +173,8 @@ const HomeScreenMaid: React.FC = () => {
             <Text style={styles.itemText}>Time: {item.time}</Text>
             <Text style={styles.itemText}>Location: {item.location || 'N/A'}</Text>
             <Text style={styles.itemText}>Contact: {item.userContact}</Text>
-            
+            <Text style={styles.itemText}>Service: {item.service}</Text>
+          
             {isExpanded && (
               <>
                 <Button 
