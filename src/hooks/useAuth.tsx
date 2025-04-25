@@ -108,7 +108,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           };
 
           await AsyncStorage.setItem('user', JSON.stringify(newUser));
-       
+          console.log(userInfo.user.role);
+          await AsyncStorage.setItem('role', JSON.stringify(userInfo.user.role));
           // Update state
           setUser(newUser);
         } catch (error) {

@@ -11,15 +11,36 @@ import MaidProfileDetials from '../screens/Profile/MaidProfileDetails';
 import KYCPage from '../screens/Profile/KYCDetailsMaid';
 import HomeScreenMaid from '../screens/Home/HomeScreenMaid';
 import BottomTabNavigator from './BottomTabNavigator';
+import AdminTabNavigator from './AdminTabNavigator';
 import { useAuth } from '../hooks/useAuth';
 import { ActivityIndicator, View } from 'react-native';
 import Feedback from '../screens/Home/Feedback';
 import UserProfile  from '../screens/Home/UserProfile';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const MainNavigator = () => {
   const { user, isLoading,isProfileCreated } = useAuth();
-
+  const [role, setRole] = useState<string | null>(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem('role');   // await the promise
+        if (raw !== null) {
+          // raw === '"admin"' if you did JSON.stringify before
+          const parsed = JSON.parse(raw);                // -> 'admin'
+          setRole(parsed);
+        } else {
+          setRole(null);
+        }
+      } catch {
+        setRole(null);
+      }
+    })();
+  }, []);
+  console.log(role);
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -47,6 +68,8 @@ const MainNavigator = () => {
           <Stack.Screen name="HomeMaid" component={HomeScreenMaid} />
           
         </>
+      ) : role === "admin" ? (
+        <Stack.Screen name="Admin" component={AdminTabNavigator} />
       ) : isProfileCreated ? (
         <Stack.Screen name="Home" component={BottomTabNavigator} />
         
