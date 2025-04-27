@@ -177,12 +177,12 @@ const BookMaid: React.FC = () => {
     }
 
     if (!location.trim() && !coordinates) {
-      Alert.alert(t('missingInfo'), t('enterLocation'));
+      Alert.alert(t('Missing Info'), t('enterLocation'));
       return;
     }
 
     if (!bookingType) {
-      Alert.alert(t('missingSelection'), t('selectBookingType'));
+      Alert.alert(t('Missing Selection'), t('selectBookingType'));
       return;
     }
 

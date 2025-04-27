@@ -21,15 +21,17 @@ export default function LoginScreenMaid() {
   const [formattedValue, setFormattedValue] = useState('');
   const [valid, setValid] = useState(false);
   const phoneInput = useRef<PhoneInput>(null);
-  
+
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const theme = useTheme();
 
   const handleGetStarted = async () => {
     const checkValid = phoneInput.current?.isValidNumber(phoneNumber);
     setValid(checkValid || false);
-    
-    if (!checkValid) {
+
+    // Regex for Indian phone number (10 digits, starts with 6-9)
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!checkValid || !phoneRegex.test(phoneNumber)) {
       alert('Please enter a valid phone number');
       return;
     }
@@ -50,14 +52,17 @@ export default function LoginScreenMaid() {
       <Text style={[styles.header, { color: theme.colors.onBackground }]}>
         Enter your phone number
       </Text>
-      
+
       <PhoneInput
         ref={phoneInput}
         defaultValue={phoneNumber}
         defaultCode="IN"
         layout="first"
         onChangeText={(text) => {
-          setPhoneNumber(text);
+
+          if (text.length <= 10) {
+            setPhoneNumber(text);
+          }
         }}
         onChangeFormattedText={(text) => {
           setFormattedValue(text);
@@ -69,8 +74,14 @@ export default function LoginScreenMaid() {
         containerStyle={styles.phoneInputContainer}
         textContainerStyle={styles.phoneInputTextContainer}
         textInputStyle={{ color: theme.colors.onBackground }}
+        textInputProps={{
+          keyboardType: "number-pad",
+          maxLength: 10,
+          placeholder: "Enter phone number",
+          placeholderTextColor: theme.colors.onSurfaceVariant,
+        }}
       />
-      
+
       <View style={styles.buttonContainer}>
         <Button
           mode="contained"

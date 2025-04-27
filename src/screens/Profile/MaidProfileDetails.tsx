@@ -6,13 +6,15 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
 import { RootStackParamList } from '../../types';
-
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Geolocation from '@react-native-community/geolocation';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
+import Geocoder from 'react-native-geocoding';
+
 
 type MaidProfileDetailsNavigationProp = StackNavigationProp<RootStackParamList, 'MaidProfile'>;
-
+Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
 const timeSlots = [
   '00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
   '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
@@ -39,12 +41,9 @@ const MaidProfileDetails = () => {
       );
       return;
     }
-    
-    // Create a deep copy of coordinates to ensure it's not lost in navigation
-    const coordinatesCopy = coordinates ? { ...coordinates } : null;
-    
-    console.log("Sending coordinates to next screen:", coordinatesCopy);
-    
+
+
+
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const timeAvailable = days.reduce((acc, day) => {
       acc[day] = selectedTimeSlots;
@@ -55,7 +54,7 @@ const MaidProfileDetails = () => {
       name,
       gender,
       location,
-      coordinates: coordinatesCopy,
+      coordinates,
       timeAvailable,
       cooking,
       cleaning,
@@ -101,18 +100,23 @@ const MaidProfileDetails = () => {
     }
 
     Geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const coords = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
-        
-        console.log("Retrieved coordinates:", coords);
         setCoordinates(coords);
-        
-        // // Update location text field with readable format
-        // setLocation(`${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`);
-        
+
+        // Reverse geocode to get address
+        try {
+          const geo = await Geocoder.from(coords.latitude, coords.longitude);
+          const address = geo.results[0]?.formatted_address || '';
+          setLocation(address); // This will update the location text
+        } catch (e) {
+          console.error('Reverse geocoding error:', e);
+          setLocation(`${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`);
+        }
+
         Alert.alert('Location Captured', 'Your location has been successfully captured!');
       },
       (error) => {
@@ -163,16 +167,54 @@ const MaidProfileDetails = () => {
               </Picker>
             </View>
             <View style={styles.locationInputContainer}>
-              <PaperTextInput
-                mode="outlined"
-                label="Location"
-                placeholder="Enter your location"
-                value={location}
-                onChangeText={setLocation}
-                style={styles.locationInput}
-                underlineColor={theme.colors.onBackground}
-                theme={{ colors: { text: theme.colors.onBackground, primary: theme.colors.onBackground } }}
-              />
+              <View style={{ flex: 1 }}>
+                <GooglePlacesAutocomplete
+                  placeholder="Enter your location"
+                  fetchDetails={true}
+                  onPress={async (data, details = null) => {
+                    setLocation(data.description);
+
+                    if (details && details.geometry && details.geometry.location) {
+                      setCoordinates({
+                        latitude: details.geometry.location.lat,
+                        longitude: details.geometry.location.lng,
+                      });
+                    } else {
+                      // Geocode the location string if details aren't available
+                      try {
+                        const geo = await Geocoder.from(data.description);
+                        const loc = geo.results[0].geometry.location;
+                        setCoordinates({
+                          latitude: loc.lat,
+                          longitude: loc.lng,
+                        });
+                      } catch (e) {
+                        console.error('Geocoding error:', e);
+                        // Optional: Show an alert that coordinates couldn't be found
+                      }
+                    }
+                  }}
+                  query={{
+                    key: 'AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg',
+                    language: 'en',
+                  }}
+                  styles={{
+                    textInput: {
+                      backgroundColor: 'transparent',
+                      color: theme.colors.onBackground,
+                    },
+                    container: {
+                      flex: 1,
+                    },
+                  }}
+                  textInputProps={{
+                    value: location,
+                    onChangeText: setLocation,
+                    placeholderTextColor: theme.colors.onSurfaceVariant,
+                  }}
+                  enablePoweredByContainer={false}
+                />
+              </View>
               <TouchableOpacity
                 style={styles.locationButton}
                 onPress={getMyLocation}
@@ -184,14 +226,15 @@ const MaidProfileDetails = () => {
                 />
               </TouchableOpacity>
             </View>
-            
+
             {/* Show coordinates if available (for debugging) */}
+      
             {coordinates && (
               <Text style={{ marginVertical: 8, color: theme.colors.onBackground }}>
-                Coordinates captured: {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}
+                Current Location: {location}
               </Text>
             )}
-            
+
             {/* <Text style={[styles.label, { color: theme.colors.onBackground }]}>Time Available</Text> */}
             <View style={styles.pickerContainer}>
               <Picker
@@ -348,3 +391,4 @@ const styles = StyleSheet.create({
 });
 
 export default MaidProfileDetails;
+

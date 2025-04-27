@@ -65,6 +65,7 @@ export default function OTPVerificationScreen() {
         keyboardType="numeric"
         value={otp}
         onChangeText={setOtp}
+        maxLength={6}
       />
       <Button
         mode="contained"
