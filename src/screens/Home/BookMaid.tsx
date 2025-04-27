@@ -99,7 +99,7 @@ const BookMaid: React.FC = () => {
   useFocusEffect(
     React.useCallback(() => {
       if (!preserveState) {
-        resetState();
+        console.log('Fetching bookings on focus');
       }
       fetchBookings();
     }, [tokenForAuth, preserveState])
@@ -110,12 +110,12 @@ const BookMaid: React.FC = () => {
     fetchBookings();
   }, [tokenForAuth]);
 
-  const resetState = () => {
-    setLocation('');
-    setMaids([]);
-    setBookingType(null);
-    setSelectedService({});
-  };
+  // const resetState = () => {
+  //   setLocation('');
+  //   setMaids([]);
+  //   setBookingType(null);
+  //   setSelectedService({});
+  // };
 
   const fetchBookings = async () => {
     if (!tokenForAuth) return;

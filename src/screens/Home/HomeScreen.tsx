@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert, TouchableOpacity, Linking } from 'react-native';
 import { Text, Button, Card, Avatar, Divider, IconButton, useTheme, Menu } from 'react-native-paper';
 import { useAuth } from '../../hooks/useAuth';
 import { TextInput } from 'react-native-paper';
@@ -36,7 +36,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   const [editableName, setEditableName] = useState(user?.name || '');
   const [editableContact, setEditableContact] = useState(user?.contact || '');
   const [editableAddress, setEditableAddress] = useState(user?.address || '');
-  const [photoUrl,setPhotoUrl] = useState(user?.photoUrl || '');
+  const [photoUrl, setPhotoUrl] = useState(user?.photoUrl || '');
   const [recentActivity, setRecentActivity] = useState<string>('You signed in just now');
   const [showActivity, setShowActivity] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -141,7 +141,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        
+
         const storedUser = await AsyncStorage.getItem('user');
 
         if (storedUser) {
@@ -196,37 +196,49 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
   };
 
   const handleCancelSubscription = async (bookingId: number, booking: Booking) => {
-    try {
-      const storedToken = user?.token;
-      const response = await axios.post(
-        'https://maid-in-india-nglj.onrender.com/api/maid/cancel-booking',
-        { bookingId },
+    Alert.alert(
+      'Cancel Subscription',
+      'Are you sure you want to cancel this booking?',
+      [
         {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${storedToken}`,
+          text: 'No',
+          style: 'cancel',
+        },
+        {
+          text: 'Yes',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const storedToken = user?.token;
+              const response = await axios.post(
+                'https://maid-in-india-nglj.onrender.com/api/maid/cancel-booking',
+                { bookingId },
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${storedToken}`,
+                  },
+                }
+              );
+              console.log('Cancel subscription response:', response.data);
+  
+              Alert.alert(
+                'Booking Cancelled',
+                'Your booking has been cancelled successfully.',
+                [{ text: 'OK' }]
+              );
+  
+              setRecentActivity(`Cancelled booking for ${booking.maidName}.`);
+              await fetchBookings();
+            } catch (error) {
+              console.error('Error cancelling subscription:', error);
+            }
           },
-        }
-      );
-      console.log('Cancel subscription response:', response.data);
-
-
-      Alert.alert(
-        'Booking Cancelled',
-        'Your booking has been cancelled successfully.',
-        [{ text: 'OK' }]
-      );
-
-
-      setRecentActivity(`Cancelled booking for ${booking.maidName}.`);
-
-
-      await fetchBookings();
-    } catch (error) {
-      console.error('Error cancelling subscription:', error);
-    }
+        },
+      ],
+      { cancelable: true }
+    );
   };
-
 
 
 
@@ -444,7 +456,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
         </Card>
 
 
-        <Card style={styles.activityCard}>
+        {/* <Card style={styles.activityCard}>
           <Card.Title
             title="Recent Activity"
             titleStyle={{ color: theme.colors.onBackground }}
@@ -464,7 +476,7 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
               </Text>
             </Card.Content>
           )}
-        </Card>
+        </Card> */}
 
         <Card style={styles.activityCard}>
           <Card.Title
@@ -503,17 +515,32 @@ const HomeScreen = ({ route }: HomeScreenProps) => {
                               <Text style={styles.maidcol}>{booking.service}</Text>
                             </Text>
                           </View>
-                          <View style={styles.bookingSlots}>
-                            {groupSlots(booking.slot).map(({ group, time }) => (
-                              <View key={group} style={styles.slotRow}>
-                                <Text style={[styles.slotDay, { color: theme.colors.onSurfaceVariant }]}>
-                                  {group}:
-                                </Text>
-                                <Text style={[styles.slotTime, { color: theme.colors.onSurfaceVariant }]}>
-                                  {time}
-                                </Text>
-                              </View>
-                            ))}
+                          <View style={{ alignItems: 'flex-end', justifyContent: 'flex-start' }}>
+                            <IconButton
+                              icon="phone"
+                              size={20}
+                              iconColor="#4CAF50"
+                              style={styles.callButton}
+                              onPress={() => {
+                                if (booking.maidContact) {
+                                  Linking.openURL(`tel:${booking.maidContact}`);
+                                } else {
+                                  Alert.alert('No contact', 'No maid contact number available.');
+                                }
+                              }}
+                            />
+                            <View style={styles.bookingSlots}>
+                              {groupSlots(booking.slot).map(({ group, time }) => (
+                                <View key={group} style={styles.slotRow}>
+                                  <Text style={[styles.slotDay, { color: theme.colors.onSurfaceVariant }]}>
+                                    {group}:
+                                  </Text>
+                                  <Text style={[styles.slotTime, { color: theme.colors.onSurfaceVariant }]}>
+                                    {time}
+                                  </Text>
+                                </View>
+                              ))}
+                            </View>
                           </View>
                         </View>
                         {booking.paymentStatus && (
@@ -715,6 +742,11 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     padding: 8,
+  },
+  callButton: {
+    margin: 0,
+    padding: 0,
+    alignSelf: 'flex-end',
   },
 });
 

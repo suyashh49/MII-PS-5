@@ -484,7 +484,24 @@ const CartCheckout = () => {
                   {...props}
                   icon="delete"
                   iconColor={theme.colors.error}
-                  onPress={() => handleSoftCancel(item.bookingId)}
+                  onPress={() => {
+                    Alert.alert(
+                      'Delete Booking',
+                      'Are you sure you want to delete this booking?',
+                      [
+                        { text: 'No', style: 'cancel' },
+                        {
+                          text: 'Yes',
+                          style: 'destructive',
+                          onPress: async () => {
+                            await handleSoftCancel(item.bookingId);
+                            Alert.alert('Deleted', 'Booking deleted.');
+                          },
+                        },
+                      ],
+                      { cancelable: true }
+                    );
+                  }}
                 />
               )}
             />
