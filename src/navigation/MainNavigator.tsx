@@ -1,4 +1,4 @@
-// MainNavigator.tsx
+// src/navigation/MainNavigator.tsx
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
@@ -13,17 +13,20 @@ import HomeScreenMaid from '../screens/Home/HomeScreenMaid';
 import BottomTabNavigator from './BottomTabNavigator';
 import AdminTabNavigator from './AdminTabNavigator';
 import { useAuth } from '../hooks/useAuth';
+import { useMaidAuth } from '../hooks/useMaidauth';
 import { ActivityIndicator, View } from 'react-native';
 import Feedback from '../screens/Home/Feedback';
-import UserProfile  from '../screens/Home/UserProfile';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import UserProfile from '../screens/Home/UserProfile';
 import { useTranslation } from 'react-i18next';
+
 const Stack = createStackNavigator<RootStackParamList>();
 
 const MainNavigator = () => {
-  const { user, isLoading,isProfileCreated,isRole } = useAuth();
- 
+  const { user, isLoading: userLoading, isProfileCreated, isRole } = useAuth();
+  const { maid, isLoading: maidLoading } = useMaidAuth();
+  
+  const isLoading = userLoading || maidLoading;
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -32,6 +35,7 @@ const MainNavigator = () => {
     );
   }
 
+  // Priority: Check for maid login first, then user login
   return (
     <Stack.Navigator
       screenOptions={{
@@ -39,7 +43,28 @@ const MainNavigator = () => {
         cardStyle: { backgroundColor: '#f7f7f7' },
       }}
     >
-      {!user ? (
+      {maid ? (
+        // Maid is logged in
+        <Stack.Screen 
+          name="HomeMaid" 
+          component={HomeScreenMaid} 
+          initialParams={{ 
+            name: maid.name || 'Maid',
+            govtId: maid.govtId,
+            imageUrl: maid.imageUrl
+          }} 
+        />
+      ) : user ? (
+        // User is logged in
+        isRole === "admin" ? (
+          <Stack.Screen name="Admin" component={AdminTabNavigator} />
+        ) : isProfileCreated ? (
+          <Stack.Screen name="Home" component={BottomTabNavigator} />
+        ) : (
+          <Stack.Screen name="UserProfile" component={UserProfile} />         
+        )
+      ) : (
+        // No one is logged in
         <>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
@@ -49,19 +74,9 @@ const MainNavigator = () => {
           <Stack.Screen name="MaidProfile" component={MaidProfileDetials} />
           <Stack.Screen name="KYCDetailsMaid" component={KYCPage} />
           <Stack.Screen name="HomeMaid" component={HomeScreenMaid} />
-          
-        </>
-      ) : isRole === "admin" ? (
-        <Stack.Screen name="Admin" component={AdminTabNavigator} />
-      ) : isProfileCreated ? (
-        <Stack.Screen name="Home" component={BottomTabNavigator} />
-        
-      ) : (
-        <>
-          <Stack.Screen name="UserProfile" component={UserProfile} />         
         </>
       )}
-       <Stack.Screen name="Feedback" component={Feedback} />
+      <Stack.Screen name="Feedback" component={Feedback} />
     </Stack.Navigator>
   );
 };

@@ -17,6 +17,7 @@ import { LineChart, BarChart, PieChart, ContributionGraph } from 'react-native-c
 import { useRef } from 'react';
 import { Linking,Platform} from 'react-native';
 import Geocoder from 'react-native-geocoding';
+import { useMaidAuth } from '../../hooks/useMaidauth';
 
 Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
 
@@ -39,6 +40,8 @@ const HomeScreenMaid: React.FC = () => {
   const navigation = useNavigation<HomeScreenMaidNavigationProp>();
   const { name } = route.params;
   const theme = useTheme();
+  const { logoutMaid } = useMaidAuth();
+
 
   // Token and bookings state
   const [maidToken, setMaidToken] = useState<string | null>(null);
@@ -207,7 +210,10 @@ const HomeScreenMaid: React.FC = () => {
       );
     };
 
-  const handleSignOut = () => navigation.navigate('Welcome');
+    const handleSignOut = async () => {
+      await logoutMaid(); // This clears maid token and data
+      navigation.navigate('Welcome');
+    };
 
   
   const ServicesDropdown = ({
