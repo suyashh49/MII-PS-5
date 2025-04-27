@@ -135,7 +135,7 @@ export default function MaidFeedbackScreen({ route }: Props) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#4285F4" />
+        <ActivityIndicator size="large" color="#1368A4" />
       </View>
     )
   }

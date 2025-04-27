@@ -28,7 +28,9 @@ export default function AllMaidsScreen({ navigation }: Props) {
   const [loading, setLoading] = useState<boolean>(true);
   const [token, setToken] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
-
+  const handleLogout = async () => {
+    await logout();
+  };
   // Load token once, then fetch maids
   useEffect(() => {
     (async () => {
@@ -86,13 +88,14 @@ export default function AllMaidsScreen({ navigation }: Props) {
               icon="dots-vertical"
               size={24}
               onPress={() => setMenuVisible(true)}
+              iconColor='white'
             />
           }
         >
           <Menu.Item
             onPress={() => {
               setMenuVisible(false);
-              logout();
+              handleLogout();
             }}
             title="Logout"
             leadingIcon="logout"
@@ -103,7 +106,7 @@ export default function AllMaidsScreen({ navigation }: Props) {
   }, [navigation, menuVisible, logout]);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color="#4285F4"/></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color="#1368A4"/></View>;
   }
 
   return (

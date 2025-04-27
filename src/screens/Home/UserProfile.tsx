@@ -24,9 +24,7 @@ const UserProfile = () => {
   const { user, setProfileCreated } = useAuth();
 
   const [name, setName] = useState(user?.name || '');
-  const [contact, setContact] = useState(
-    user?.contact?.replace(/^\+91/, '') || ''
-  );
+  const [contact, setContact] = useState(user?.contact || '');
   const [gender, setGender] = useState('Male');
   const [photoUrl, setPhotoUrl] = useState(user?.photoUrl || '');
   const fullContact = `+91${contact}`;
@@ -107,9 +105,7 @@ const UserProfile = () => {
               uri: photoUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name),
             }}
           />
-          <Text style={{ textAlign: 'center', marginTop: 8, color: theme.colors.primary }}>
-            Tap to change photo
-          </Text>
+          <Text style={{ marginTop: 8 , marginLeft: -30, marginRight:0}}>Change Profile Picture</Text>
         </TouchableOpacity>
       </View>
       <TextInput
@@ -184,10 +180,11 @@ const styles = StyleSheet.create({
     height: 50,
   },
   avatarContainer: {
-    //alignItems: 'center',
+    alignItems: 'center',
     marginBottom: 16,
-    marginRight: 10,
-    marginLeft: 0,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
 });
 

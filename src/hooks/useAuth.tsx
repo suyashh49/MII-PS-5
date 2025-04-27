@@ -4,6 +4,7 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContextType, User } from '../types';
+import { set } from 'date-fns';
 
 
 
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileCreated, setIsProfileCreated] = useState(true);
+  const [isRole, setIsRole] = useState<string | null>(null);
   const [request, response, promptAsync] = Google.useAuthRequest({
     //expoClientId: CLIENT_ID,
     webClientId: "411763389934-btjt6a3ua0jdmc1fuhvk20nped3gdgbh.apps.googleusercontent.com",
@@ -95,7 +97,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           if(userProfile.data.profileCreated === false) {
             setIsProfileCreated(false);
           }
-          await AsyncStorage.removeItem('user');
+          //await AsyncStorage.removeItem('user');
           const newUser: User = {
             id: userInfo.user.id,
             name: userProfile.data.name || userInfo.user.name,
@@ -109,6 +111,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
           await AsyncStorage.setItem('user', JSON.stringify(newUser));
           console.log(userInfo.user.role);
+          setIsRole(userInfo.user.role);
           await AsyncStorage.setItem('role', JSON.stringify(userInfo.user.role));
           // Update state
           setUser(newUser);
@@ -135,6 +138,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = async () => {
     try {
+      await AsyncStorage.removeItem('role');
       await AsyncStorage.removeItem('user');
       setUser(null);
     } catch (error) {
@@ -149,6 +153,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       login, 
       logout, 
       isProfileCreated, 
+      isRole,
       setProfileCreated: (value: boolean) => setIsProfileCreated(value) 
     }}>
       {children}

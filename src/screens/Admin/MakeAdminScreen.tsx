@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import theme from '../../config/theme'
 
 const API_BASE_URL = 'https://maid-in-india-nglj.onrender.com/api'
 
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: theme.colors.background,
     justifyContent: 'center',
   },
   label: {
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   button: {
-    backgroundColor: '#4285F4',
+    backgroundColor: theme.colors.primary,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',

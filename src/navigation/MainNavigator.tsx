@@ -22,25 +22,8 @@ import { useTranslation } from 'react-i18next';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const MainNavigator = () => {
-  const { user, isLoading,isProfileCreated } = useAuth();
-  const [role, setRole] = useState<string | null>(null);
-  useEffect(() => {
-    (async () => {
-      try {
-        const raw = await AsyncStorage.getItem('role');   // await the promise
-        if (raw !== null) {
-          // raw === '"admin"' if you did JSON.stringify before
-          const parsed = JSON.parse(raw);                // -> 'admin'
-          setRole(parsed);
-        } else {
-          setRole(null);
-        }
-      } catch {
-        setRole(null);
-      }
-    })();
-  }, []);
-  console.log(role);
+  const { user, isLoading,isProfileCreated,isRole } = useAuth();
+ 
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -68,7 +51,7 @@ const MainNavigator = () => {
           <Stack.Screen name="HomeMaid" component={HomeScreenMaid} />
           
         </>
-      ) : role === "admin" ? (
+      ) : isRole === "admin" ? (
         <Stack.Screen name="Admin" component={AdminTabNavigator} />
       ) : isProfileCreated ? (
         <Stack.Screen name="Home" component={BottomTabNavigator} />

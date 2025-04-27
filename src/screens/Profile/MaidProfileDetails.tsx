@@ -11,7 +11,7 @@ import Geolocation from '@react-native-community/geolocation';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import Geocoder from 'react-native-geocoding';
-
+import { Menu, Checkbox } from 'react-native-paper';
 
 type MaidProfileDetailsNavigationProp = StackNavigationProp<RootStackParamList, 'MaidProfile'>;
 Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
@@ -22,26 +22,40 @@ const timeSlots = [
 
 const MaidProfileDetails = () => {
   const [name, setName] = useState<string>('');
-  const [gender, setGender] = useState<string>('Male');
+  const [gender, setGender] = useState<string>('Gender');
   const [location, setLocation] = useState<string>('');
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
   const [cooking, setCooking] = useState<boolean>(false);
   const [cleaning, setCleaning] = useState<boolean>(false);
   const [pricePerService, setPricePerService] = useState<string>('');
+  const [servicesMenuVisible, setServicesMenuVisible] = useState(false);
 
   const navigation = useNavigation<MaidProfileDetailsNavigationProp>();
   const theme = useTheme();
   const [coordinates, setCoordinates] = useState<{ latitude: Float, longitude: Float } | null>(null);
 
   const handleNext = () => {
+    if (!name.trim()) {
+      Alert.alert('Missing Information', 'Please enter your name');
+      return;
+    }
     if (!coordinates) {
-      Alert.alert(
-        'Location Required',
-        'Please tap the GPS icon to share your location before continuing.'
-      );
+      Alert.alert('Location Required', 'Please tap the GPS icon to share your location');
+      return;
+    }
+    if (selectedTimeSlots.length === 0) {
+      Alert.alert('Time Required', 'Please select at least one time slot');
+      return;
+    }
+    if (!pricePerService || isNaN(Number(pricePerService))) {
+      Alert.alert('Invalid Price', 'Please enter a valid price');
       return;
     }
 
+    if (!cooking && !cleaning) {
+      Alert.alert('Service Required', 'Please select at least one service type (Cooking or Cleaning)');
+      return;
+    }
 
 
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -161,6 +175,7 @@ const MaidProfileDetails = () => {
                 selectedValue={gender}
                 onValueChange={(itemValue) => setGender(itemValue)}
                 style={[styles.picker, { color: theme.colors.onBackground }]}
+
               >
                 <Picker.Item label="Male" value="Male" />
                 <Picker.Item label="Female" value="Female" />
@@ -228,7 +243,7 @@ const MaidProfileDetails = () => {
             </View>
 
             {/* Show coordinates if available (for debugging) */}
-      
+
             {coordinates && (
               <Text style={{ marginVertical: 8, color: theme.colors.onBackground }}>
                 Current Location: {location}
@@ -239,6 +254,7 @@ const MaidProfileDetails = () => {
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue=""
+
                 onValueChange={(time) => {
                   if (time) {
                     handleTimeSlotChange(time);
@@ -264,26 +280,65 @@ const MaidProfileDetails = () => {
               label="Price per Hour (₹)"
               placeholder="Enter price per hour"
               keyboardType="numeric"
+
               value={pricePerService}
               onChangeText={setPricePerService}
               style={styles.input}
               underlineColor={theme.colors.onBackground}
               theme={{ colors: { text: theme.colors.onBackground, primary: theme.colors.onBackground } }}
             />
-            <View style={styles.switchRow}>
-              <Text style={[styles.label, { color: theme.colors.onBackground }]}>Cooking</Text>
-              <Switch value={cooking} onValueChange={setCooking} />
-            </View>
-            <View style={styles.switchRow}>
-              <Text style={[styles.label, { color: theme.colors.onBackground }]}>Cleaning</Text>
-              <Switch value={cleaning} onValueChange={setCleaning} />
+            <View style={{ marginVertical: 8 }}>
+              <Menu
+                visible={servicesMenuVisible}
+                onDismiss={() => setServicesMenuVisible(false)}
+                anchor={
+                  <Button
+                    mode="outlined"
+                    onPress={() => setServicesMenuVisible(true)}
+                    style={{ width: '100%', justifyContent: 'flex-start', borderRadius: 3 }}
+                    labelStyle={{ color: theme.colors.onSurfaceVariant, textAlign: 'left', flex: 1 }}
+                    icon="chevron-down"
+                    contentStyle={{ flexDirection: 'row-reverse' }}
+                  >
+                    {!cooking && !cleaning
+                      ? 'Select Services'
+                      : [cooking ? 'Cooking' : null, cleaning ? 'Cleaning' : null].filter(Boolean).join(', ')
+                    }
+                  </Button>
+                }
+                style={{ width: '90%', alignSelf: 'center' }}
+              >
+                <Menu.Item
+                  onPress={() => {
+                    setCooking(prev => !prev);
+                    setServicesMenuVisible(false);
+                  }}
+                  title="Cooking"
+                  leadingIcon={() => (
+                    <Checkbox status={cooking ? 'checked' : 'unchecked'} />
+                  )}
+                />
+                <Menu.Item
+                  onPress={() => {
+                    setCleaning(prev => !prev);
+                    setServicesMenuVisible(false);
+                  }}
+                  title="Cleaning"
+                  leadingIcon={() => (
+                    <Checkbox status={cleaning ? 'checked' : 'unchecked'} />
+                  )}
+                />
+              </Menu>
             </View>
           </Card.Content>
         </Card>
         <Button
           mode="contained"
           disabled={!coordinates}
-          onPress={handleNext}
+          onPress={() => {
+            console.log(cooking, cleaning);
+            handleNext();
+          }}
           style={styles.button}
           contentStyle={styles.buttonContent}
           labelStyle={styles.buttonLabel}

@@ -621,9 +621,7 @@ const HomeScreenMaid: React.FC = () => {
 
     // Clear loading state when bookings data is available
     useEffect(() => {
-      if (bookings && bookings.length > 0) {
-        setLoading(false);
-      }
+      setLoading(false);
     }, [bookings]);
 
     // Loading state
@@ -955,7 +953,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', padding: 12, marginRight: 10,
     marginTop: 17, borderRadius: 6, elevation: 2
   },
-  itemText: { fontSize: 16, color: '#333' },
+  itemText: { fontSize: 16, color: '#333', fontWeight: 'bold' },
   emptyDate: {
     height: 40, flex: 1, paddingTop: 20,
     justifyContent: 'center', backgroundColor: '#f5f5f5', alignItems: 'center'

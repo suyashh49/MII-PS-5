@@ -24,7 +24,6 @@ const KYCDetailsMaid = () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [16, 9],
       quality: 1,
     });
     if (!result.canceled && result.assets && result.assets.length > 0) {

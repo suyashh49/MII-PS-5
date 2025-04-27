@@ -105,6 +105,7 @@ export interface User {
     logout: () => Promise<void>;
     isProfileCreated: boolean;
     setProfileCreated: (value: boolean) => void;
+    isRole: string | null;
   }
 
   export interface UserBooking {
