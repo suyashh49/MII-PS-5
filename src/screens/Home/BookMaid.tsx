@@ -674,6 +674,10 @@ const BookMaid: React.FC = () => {
                     size={80}
                     source={{ uri: maid.imageUrl || 'https://via.placeholder.com/80' }}
                   />
+                   <View style={styles.ratingContainer}>
+                    <Text style={styles.ratingText}>⭐ {maid.rating?.toFixed(1) || 'N/A'}</Text>
+                  </View>
+
                   <View style={styles.maidDetails}>
                     <Text style={[styles.maidName, { color: theme.colors.onBackground }]}>
                       {maid.name || t('unnamed')}
@@ -776,6 +780,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
+  ratingContainer: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  
+  ratingText: {
+    fontSize: 14,
+    color: '#a1890b', // gold-like color
+    fontWeight: 'bold',
+  },
+  
   langButton: {
     paddingHorizontal: 8,
     paddingVertical: 4,
