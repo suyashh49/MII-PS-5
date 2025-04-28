@@ -40,16 +40,24 @@ export default function OTPVerificationScreen() {
         });
         const maidData = maidResponse.data;
 
+        //       await loginMaid(token, maidData);
+
+        //       if (maidData.profileCreated === true) {
+        //         navigation.navigate('HomeMaid', { name: maidData.name, govtId: maidData.govtId, imageUrl: maidData.imageUrl });
+        //         return;
+        //       }
+
+        //       navigation.replace('MaidProfile');
+        //     } else {
+        //       Alert.alert("OTP Verification failed. Please try again.");
+        //     }
+        //   } catch (error) {
+        //     console.error("Error verifying OTP:", error);
+        //     Alert.alert("Error verifying OTP. Please try again.");
+        //   }
+        // };
+
         await loginMaid(token, maidData);
-
-        if (maidData.profileCreated === true) {
-          navigation.navigate('HomeMaid', { name: maidData.name, govtId: maidData.govtId, imageUrl: maidData.imageUrl });
-          return;
-        }
-
-        navigation.replace('MaidProfile');
-      } else {
-        Alert.alert("OTP Verification failed. Please try again.");
       }
     } catch (error) {
       console.error("Error verifying OTP:", error);

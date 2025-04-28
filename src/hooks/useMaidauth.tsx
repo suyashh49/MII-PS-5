@@ -31,6 +31,9 @@ export const MaidAuthProvider: React.FC<{children: React.ReactNode}> = ({ childr
         const maidToken = await AsyncStorage.getItem('maidToken');
         
         if (maidString && maidToken) {
+            const parsedMaid = JSON.parse(maidString);
+            console.log('Loaded maid data:', parsedMaid);
+            console.log('profileCreated value:', parsedMaid.profileCreated);
           setMaid(JSON.parse(maidString));
         }
       } catch (error) {
@@ -47,12 +50,11 @@ export const MaidAuthProvider: React.FC<{children: React.ReactNode}> = ({ childr
     try {
       await AsyncStorage.setItem('maidToken', token);
       await AsyncStorage.setItem('maid', JSON.stringify(maidData));
-      setMaid(maidData as Maid);
-    } catch (error) {
-      console.error('Maid login error:', error);
-    }
-  };
-
+    setMaid(maidData as Maid);
+  } catch (error) {
+    console.error('Maid login error:', error);
+  }
+};
   const logoutMaid = async () => {
     try {
       await AsyncStorage.removeItem('maidToken');

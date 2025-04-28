@@ -44,16 +44,22 @@ const MainNavigator = () => {
       }}
     >
       {maid ? (
-        // Maid is logged in
-        <Stack.Screen 
-          name="HomeMaid" 
-          component={HomeScreenMaid} 
-          initialParams={{ 
-            name: maid.name || 'Maid',
-            govtId: maid.govtId,
-            imageUrl: maid.imageUrl
-          }} 
-        />
+         maid.profileCreated ? ( // Add this check
+          <Stack.Screen 
+            name="HomeMaid" 
+            component={HomeScreenMaid} 
+            initialParams={{ 
+              name: maid.name || 'Maid',
+              govtId: maid.govtId,
+              imageUrl: maid.imageUrl
+            }} 
+          />
+        ) : (
+          <Stack.Screen name="MaidProfile" component={MaidProfileDetials} />
+          //  <Stack.Screen name="KYCDetailsMaid" component={KYCPage} />
+          // <Stack.Screen name="HomeMaid" component={HomeScreenMaid} /> 
+          
+        )
       ) : user ? (
         // User is logged in
         isRole === "admin" ? (
@@ -71,11 +77,13 @@ const MainNavigator = () => {
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Login_Maid" component={LoginScreenMaid} />
           <Stack.Screen name="Otp" component={Otp} />
-          <Stack.Screen name="MaidProfile" component={MaidProfileDetials} />
+          {/* <Stack.Screen name="MaidProfile" component={MaidProfileDetials} />
           <Stack.Screen name="KYCDetailsMaid" component={KYCPage} />
-          <Stack.Screen name="HomeMaid" component={HomeScreenMaid} />
+          <Stack.Screen name="HomeMaid" component={HomeScreenMaid} /> */}
         </>
       )}
+      <Stack.Screen name="KYCDetailsMaid" component={KYCPage} />
+      {/* <Stack.Screen name="HomeMaid" component={HomeScreenMaid} /> */}
       <Stack.Screen name="Feedback" component={Feedback} />
     </Stack.Navigator>
   );

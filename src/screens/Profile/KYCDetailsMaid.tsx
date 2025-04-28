@@ -8,6 +8,7 @@ import { RootStackParamList } from '../../types';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useMaidAuth } from '../../hooks/useMaidauth';
 
 type KYCDetailsMaidNavigationProp = StackNavigationProp<RootStackParamList, 'KYCDetailsMaid'>;
 type KYCDetailsMaidRouteProp = RouteProp<RootStackParamList, 'KYCDetailsMaid'>;
@@ -19,6 +20,7 @@ const KYCDetailsMaid = () => {
   const route = useRoute<KYCDetailsMaidRouteProp>();
   const { name, gender, location, timeAvailable, cooking, cleaning, pricePerService, coordinates } = route.params;
   const theme = useTheme();
+  const { loginMaid } = useMaidAuth();
 
   const pickImage = async (setImage: React.Dispatch<React.SetStateAction<string | null>>) => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -68,8 +70,11 @@ const KYCDetailsMaid = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+     
       
       console.log('API Response:', response.data);
+      await AsyncStorage.setItem('maid', JSON.stringify(response.data));
+      await loginMaid(token, response.data);
       alert('Profile created successfully');
       navigation.navigate('HomeMaid', { name, govtId, imageUrl });
     } catch (error) {
@@ -127,7 +132,7 @@ const KYCDetailsMaid = () => {
         </Card>
         
         {/* Display coordinates for debugging */}
-        <Card style={styles.card}>
+        {/* <Card style={styles.card}>
           <Card.Content>
             <Text style={[styles.label, { color: theme.colors.onBackground, textAlign: 'center' }]}>
               Location Coordinates
@@ -138,7 +143,7 @@ const KYCDetailsMaid = () => {
                 'No coordinates available'}
             </Text>
           </Card.Content>
-        </Card>
+        </Card> */}
         
         <Button
           mode="contained"
@@ -217,3 +222,4 @@ const styles = StyleSheet.create({
 });
 
 export default KYCDetailsMaid;
+
