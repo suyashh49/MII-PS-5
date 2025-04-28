@@ -5,7 +5,7 @@
       "hindi":  "हिंदी",
       "headerTitle": "Book a Maid/Cook",
       "logout": "Sign Out",
-      "locationPlaceholder": "Enter location",
+      "locationPlaceholder": "Enter Location",
       "Finding Current Location, Select Booking type": "Using your current location",
       "selectBookingType": "Select Booking Type",
       "mwf": "M - W - F",
@@ -34,6 +34,8 @@
       "signIn": "Sign in",
   "useGoogleAccount": "Use your Google Account",
   "signInWithGoogle": "Sign in with Google",
+  "noResults": "Please make some other selection",
+  "noMaidsFound": "No maids found",
  
   "termsAgreement": "By continuing, you agree to our terms of service and privacy policy.",
   "welcomemaid": "Welcome",
@@ -92,7 +94,27 @@
   "failed_open_directions": "Failed to open directions",
   "success": "Success",
   "profile_updated": "Profile updated",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  
+    "otp_verification": "OTP Verification",
+    "enter_otp": "Enter OTP",
+    "verify_otp": "Verify OTP",
+    "otp_verified": "OTP Verified! Logging in...",
+    "error_verify_otp": "Error verifying OTP. Please try again.",
+    "verifying_otp_for": "Verifying OTP for",
+    "otp_error": "Error verifying OTP:",
+
+    
+      "enter_phone_header": "Enter your phone number",
+      "phone_placeholder": "Enter phone number",
+      "send_otp_button": "Send OTP",
+      "invalid_phone_alert": "Please enter a valid phone number",
+      "sending_otp_to": "Sending OTP to",
+      "otp_sent_alert": "OTP sent to {{phone}}",
+      "otp_send_error": "Error sending OTP:",
+      "otp_failed_alert": "Failed to send OTP. Please try again."
+    
+  
   
 
 }

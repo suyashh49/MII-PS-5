@@ -545,12 +545,14 @@ const CartCheckout = () => {
         region={mapRegion}
         onRegionChangeComplete={setMapRegion}
         onPress={(e) => setSelectedMarker(e.nativeEvent.coordinate)}
+        
       >
         {selectedMarker && (
           <Marker
             coordinate={selectedMarker}
             draggable
             onDragEnd={(e) => setSelectedMarker(e.nativeEvent.coordinate)}
+            pinColor="red" 
           />
         )}
       </MapView>

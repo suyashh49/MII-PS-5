@@ -8,6 +8,8 @@ import PhoneInput from 'react-native-phone-number-input';
 import axios from 'axios';
 import { LogBox } from 'react-native';
 import theme from '../../config/theme';
+import i18n from '../../locales/i18n';
+import { useTranslation } from 'react-i18next';
 
 LogBox.ignoreLogs([
   'CountryItem: Support for defaultProps will be removed',
@@ -21,6 +23,10 @@ export default function LoginScreenMaid() {
   const [formattedValue, setFormattedValue] = useState('');
   const [valid, setValid] = useState(false);
   const phoneInput = useRef<PhoneInput>(null);
+  const { t } = useTranslation(); // Initialize translation hook
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
 
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const theme = useTheme();
@@ -32,25 +38,25 @@ export default function LoginScreenMaid() {
     // Regex for Indian phone number (10 digits, starts with 6-9)
     const phoneRegex = /^[6-9]\d{9}$/;
     if (!checkValid || !phoneRegex.test(phoneNumber)) {
-      alert('Please enter a valid phone number');
+      alert(t('invalid_phone_alert'));
       return;
     }
 
-    console.log("Sending OTP to", formattedValue);
+    console.log(t('sending_otp_to'), formattedValue);
     try {
       await axios.post('https://maid-in-india-nglj.onrender.com/api/maid/send-otp', { contact: formattedValue });
-      alert(`OTP sent to ${formattedValue}`);
+      alert(t('otp_sent_alert', { phone: formattedValue }));
       navigation.navigate('Otp', { phone: formattedValue });
     } catch (error) {
-      console.error("Error sending OTP:", error);
-      alert("Failed to send OTP. Please try again.");
+      console.error(t('otp_send_error'), error);
+      alert(t('otp_failed_alert'));
     }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.header, { color: theme.colors.onBackground }]}>
-        Enter your phone number
+        {t('enter_phone_header')}
       </Text>
 
       <PhoneInput
@@ -59,7 +65,6 @@ export default function LoginScreenMaid() {
         defaultCode="IN"
         layout="first"
         onChangeText={(text) => {
-
           if (text.length <= 10) {
             setPhoneNumber(text);
           }
@@ -77,7 +82,7 @@ export default function LoginScreenMaid() {
         textInputProps={{
           keyboardType: "number-pad",
           maxLength: 10,
-          placeholder: "Enter phone number",
+          placeholder: t('phone_placeholder'),
           placeholderTextColor: theme.colors.onSurfaceVariant,
         }}
       />
@@ -90,13 +95,14 @@ export default function LoginScreenMaid() {
           contentStyle={styles.buttonContent}
           labelStyle={styles.buttonLabel}
         >
-          Send OTP
+          {t('send_otp_button')}
         </Button>
       </View>
     </View>
   );
 }
 
+// Keep styles unchanged
 const styles = StyleSheet.create({
   container: {
     flex: 1,

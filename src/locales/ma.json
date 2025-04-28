@@ -93,5 +93,24 @@
     "failed_open_directions": "दिशानिर्देश उघडण्यात अयशस्वी",
     "success": "यश",
     "profile_updated": "प्रोफाइल यशस्वीरित्या अपडेट केले",
-    "loading": "लोड होत आहे..."
+    "loading": "लोड होत आहे...",
+    
+      "otp_verification": "OTP पडताळणी",
+      "enter_otp": "OTP प्रविष्ट करा",
+      "verify_otp": "OTP सत्यापित करा",
+      "otp_verified": "OTP सत्यापित! लॉगिन होत आहे...",
+      "error_verify_otp": "OTP सत्यापनात त्रुटी. पुन्हा प्रयत्न करा.",
+      "verifying_otp_for": "यासाठी OTP पडताळत आहे",
+      "otp_error": "OTP सत्यापनात त्रुटी:",
+      
+        "enter_phone_header": "आपला फोन नंबर प्रविष्ट करा",
+        "phone_placeholder": "फोन नंबर टाका",
+        "send_otp_button": "OTP पाठवा",
+        "invalid_phone_alert": "कृपया वैध फोन नंबर टाका",
+        "sending_otp_to": "या नंबरवर OTP पाठवला जात आहे",
+        "otp_sent_alert": "OTP {{phone}} या नंबरवर पाठवला आहे",
+        "otp_send_error": "OTP पाठवताना त्रुटी:",
+        "otp_failed_alert": "OTP पाठविण्यात अयशस्वी. पुन्हा प्रयत्न करा."
+      
+    
   }
