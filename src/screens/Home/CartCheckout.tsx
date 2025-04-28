@@ -12,6 +12,12 @@ import Geocoder from 'react-native-geocoding';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import i18n from '../../locales/i18n';
 import { useTranslation } from 'react-i18next';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Modal, Dimensions, Animated } from 'react-native';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import Geolocation from '@react-native-community/geolocation';
+
+const { width, height } = Dimensions.get('window');
 
 Geocoder.init('AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg');
 
@@ -48,6 +54,17 @@ const CartCheckout = () => {
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [languageSubmenuVisible, setLanguageSubmenuVisible] = useState<boolean>(false);
+
+  const [mapVisible, setMapVisible] = useState(false);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 20.5937,
+    longitude: 78.9629,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+  const [selectedMarker, setSelectedMarker] = useState<{ latitude: number; longitude: number } | null>(null);
+  const mapRef = useRef<MapView>(null);
+  const [locationAnimValue] = useState(new Animated.Value(0));
 
   useEffect(() => {
     if (route.params) {
@@ -402,6 +419,8 @@ const CartCheckout = () => {
     );
   };
 
+  
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
@@ -419,7 +438,169 @@ const CartCheckout = () => {
           />
         </TouchableOpacity>
       </View>
+      <Modal
+    visible={mapVisible}
+    animationType="slide"
+    onRequestClose={() => setMapVisible(false)}
+  >
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+        backgroundColor: theme.colors.background,
+        zIndex: 2,
+      }}>
+        <TouchableOpacity onPress={() => setMapVisible(false)}>
+          <MaterialCommunityIcons name="close" size={24} color={theme.colors.onBackground} />
+        </TouchableOpacity>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.onBackground }}>Select Address</Text>
+        <TouchableOpacity
+          onPress={async () => {
+            // Get current location
+            Geolocation.getCurrentPosition(
+              (position) => {
+                const coords = {
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                };
+                const newRegion = {
+                  ...coords,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                };
+                setMapRegion(newRegion);
+                setSelectedMarker(coords);
+                if (mapRef.current) {
+                  mapRef.current.animateToRegion(newRegion, 1000);
+                }
+              },
+              (error) => {
+                Alert.alert('Error', 'Failed to get your current location.');
+              },
+              { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+            );
+          }}
+        >
+          <MaterialCommunityIcons name="crosshairs-gps" size={24} color={theme.colors.primary} />
+        </TouchableOpacity>
+      </View>
 
+      <GooglePlacesAutocomplete
+        placeholder="Search for a location"
+        fetchDetails={true}
+        onPress={(data, details = null) => {
+          if (details && details.geometry) {
+            const newRegion = {
+              latitude: details.geometry.location.lat,
+              longitude: details.geometry.location.lng,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            };
+            setMapRegion(newRegion);
+            setSelectedMarker({
+              latitude: details.geometry.location.lat,
+              longitude: details.geometry.location.lng,
+            });
+            if (mapRef.current) {
+              mapRef.current.animateToRegion(newRegion, 1000);
+            }
+          }
+        }}
+        query={{
+          key: 'AIzaSyAPQtPZzAuyG4dyEP-45rf8FtOr6pSUBsg',
+          language: 'en',
+        }}
+        styles={{
+          container: {
+            position: 'absolute',
+            top: 60,
+            width: '90%',
+            zIndex: 1,
+            alignSelf: 'center',
+          },
+          textInputContainer: {
+            backgroundColor: 'white',
+            borderRadius: 8,
+            paddingHorizontal: 5,
+          },
+          textInput: {
+            height: 40,
+            color: '#5d5d5d',
+            fontSize: 16,
+            borderRadius: 8,
+          },
+          listView: {
+            backgroundColor: 'white',
+            borderRadius: 8,
+          },
+        }}
+      />
+
+      <MapView
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
+        style={{ width: '100%', height: height * 0.7, marginTop: 80 }}
+        region={mapRegion}
+        onRegionChangeComplete={setMapRegion}
+        onPress={(e) => setSelectedMarker(e.nativeEvent.coordinate)}
+      >
+        {selectedMarker && (
+          <Marker
+            coordinate={selectedMarker}
+            draggable
+            onDragEnd={(e) => setSelectedMarker(e.nativeEvent.coordinate)}
+          />
+        )}
+      </MapView>
+
+      <View style={{ padding: 16, backgroundColor: theme.colors.background }}>
+        <Button
+          mode="contained"
+          disabled={!selectedMarker}
+          onPress={async () => {
+            if (selectedMarker) {
+              // Reverse geocode to get address
+              try {
+                const geoRes = await Geocoder.from(selectedMarker.latitude, selectedMarker.longitude);
+                if (
+                  geoRes.results &&
+                  geoRes.results.length > 0 &&
+                  geoRes.results[0].formatted_address
+                ) {
+                  const address = geoRes.results[0].formatted_address;
+                  const lines = address.split(',').map(line => line.trim());
+                  setAddressLine1(lines[0] || '');
+                  setAddressLine2(lines[1] || '');
+                  setAddressLine3(lines.slice(2).join(', ') || '');
+                }
+              } catch (error) {
+                Alert.alert('Error', 'Could not fetch address for this location.');
+              }
+              setMapVisible(false);
+              Animated.sequence([
+                Animated.timing(locationAnimValue, {
+                  toValue: 1,
+                  duration: 300,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(locationAnimValue, {
+                  toValue: 0,
+                  duration: 300,
+                  delay: 1000,
+                  useNativeDriver: true,
+                })
+              ]).start();
+            }
+          }}
+          style={{ borderRadius: 8 }}
+        >
+          Confirm Location
+        </Button>
+      </View>
+    </SafeAreaView>
+  </Modal>
       {/* Main Content */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Card style={styles.summaryCard}>
@@ -436,10 +617,19 @@ const CartCheckout = () => {
           </Card.Content>
         </Card>
 
+
         {/* User Information */}
         <Card style={styles.infoCard}>
           <Card.Content>
             <Text style={styles.infoTitle}>User's Address</Text>
+            <Button
+              mode="outlined"
+              onPress={() => setMapVisible(true)}
+              style={{ marginBottom: 12 , borderRadius: 4}}
+              labelStyle={{ color: theme.colors.onBackground }}
+            >
+              Select Address on Map
+            </Button>
             <TextInput
               label="Address Line 1"
               value={addressLine1}
@@ -469,6 +659,19 @@ const CartCheckout = () => {
               style={styles.textInput}
               keyboardType="phone-pad"
             />
+            <Animated.View style={{
+              opacity: locationAnimValue,
+              transform: [{
+                translateY: locationAnimValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [10, 0]
+                })
+              }]
+            }}>
+              <Text style={{ color: theme.colors.primary, textAlign: 'center', marginVertical: 8 }}>
+                Address selected successfully!
+              </Text>
+            </Animated.View>
           </Card.Content>
         </Card>
 

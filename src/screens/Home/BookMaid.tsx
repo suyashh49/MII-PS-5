@@ -69,7 +69,7 @@ const BookMaid: React.FC = () => {
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState<boolean>(false);
   const [showCurrentLocation, setShowCurrentLocation] = useState<boolean>(false);
   const [bookingType, setBookingType] = useState<number | null>(null);
-  const [selectedService, setSelectedService] = useState<{ [maidId: number]: 'cooking' | 'cleaning' | 'both' }>({});
+  const [selectedService, setSelectedService] = useState<{ [maidId: number]: 'cooking' | 'cleaning' | 'both' | undefined }>({});
   const [hasSearched, setHasSearched] = useState<boolean>(false);  
   const route = useRoute<BookMaidRouteProp>();
   const preserveState = route.params?.preserveState ?? false;
@@ -248,7 +248,7 @@ const BookMaid: React.FC = () => {
     setSelectedService(prev => {
       const current = prev[maid.maidId];
       if (current === service) {
-        return { ...prev, [maid.maidId]: 'both' };
+        return { ...prev, [maid.maidId]: undefined };
       }
       return { ...prev, [maid.maidId]: service };
     });
@@ -321,13 +321,14 @@ const BookMaid: React.FC = () => {
   };
 
   const renderServiceButtons = (maid: Maid) => {
-    const serviceSelected = selectedService[maid.maidId] || '';
+    const serviceSelected = selectedService[maid.maidId];
     const fullyBooked = !hasCommonFreeSlot(maid);
+  
     return (
       <View style={styles.serviceButtonsContainer}>
         {maid.cleaning && (
           <Button
-            mode={serviceSelected === 'cleaning' || serviceSelected === 'both' ? 'contained' : 'outlined'}
+            mode={serviceSelected === 'cleaning' ? 'contained' : 'outlined'}
             onPress={() => toggleService(maid, 'cleaning')}
             style={styles.serviceButton}
             disabled={fullyBooked}
@@ -337,7 +338,7 @@ const BookMaid: React.FC = () => {
         )}
         {maid.cooking && (
           <Button
-            mode={serviceSelected === 'cooking' || serviceSelected === 'both' ? 'contained' : 'outlined'}
+            mode={serviceSelected === 'cooking' ? 'contained' : 'outlined'}
             onPress={() => toggleService(maid, 'cooking')}
             style={styles.serviceButton}
             disabled={fullyBooked}
