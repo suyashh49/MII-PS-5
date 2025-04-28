@@ -199,13 +199,13 @@ const MaidProfileDetails = () => {
         <Text style={[styles.headerTitle, { color: theme.colors.onPrimary }]}>
           Welcome, Maid!
         </Text>
-        <Button
+        {/* <Button
           mode="contained"
           onPress={clearStorage}
           style={{ margin: 16, backgroundColor: 'red' }}
         >
           Clear Maid Storage
-        </Button>
+        </Button> */}
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}  keyboardShouldPersistTaps="handled">

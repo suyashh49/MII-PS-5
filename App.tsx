@@ -9,6 +9,13 @@ import MainNavigator from './src/navigation/MainNavigator';
 import { AuthProvider } from './src/hooks/useAuth';
 import { MaidAuthProvider } from './src/hooks/useMaidauth';
 import 'react-native-get-random-values';
+import { LogBox } from 'react-native';
+
+LogBox.ignoreAllLogs(true); // Hides all yellow box warnings
+if (__DEV__) {
+  // @ts-ignore
+  console.error = () => {};
+}
 
 export default function App() {
   return (

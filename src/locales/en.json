@@ -89,7 +89,7 @@
   "failed_load_bookings": "Failed to load bookings",
   "failed_load_profile": "Failed to load profile",
   "failed_update_profile": "Failed to update profile",
-  "fix_highlighted_fields": "Please fix the highlighted fields",
+  "fix_highlighted_fields": "Please fill all the mandatory fields",
   "cannot_open_maps": "Cannot open Google Maps",
   "failed_open_directions": "Failed to open directions",
   "success": "Success",
