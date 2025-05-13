@@ -46,7 +46,7 @@ const Theme: MD3Theme = {
 
 export default Theme;
 
-// // src/config/theme.tsx
+// // // src/config/theme.tsx
 // import React, { createContext, useContext, useState, useEffect } from 'react';
 // import { MD3DarkTheme, MD3LightTheme, MD3Theme } from 'react-native-paper';
 // import { useColorScheme } from 'react-native';
@@ -60,7 +60,7 @@ export default Theme;
 //   ...MD3DarkTheme,
 //   colors: {
 //     ...MD3DarkTheme.colors,
-//     primary: '#4285F4',  //blue
+//     primary: '#1368A4',  //blue
 //     accent: '#34A853',  //green
 //     background: '#121212', //black
 //     surface: '#1E1E1E', //dark grey
@@ -75,14 +75,14 @@ export default Theme;
 //   ...MD3LightTheme,
 //   colors: {
 //     ...MD3LightTheme.colors,
-//     primary: '#4285F4',  // blue
-//     accent: '#34A853',   // green
-//     background: '#FFFFFF', // white
-//     surface: '#F5F5F5',   // light grey
-//     text: '#202124',      // dark grey/almost black
-//     error: '#EA4335',     // red
-//     disabled: '#9AA0A6',  // medium grey
-//     placeholder: '#5F6368', // dark grey
+//     primary: '#1368A4',  // blue (kept the same for brand consistency)
+//      accent: '#34A853',   // green (kept the same for brand consistency)
+//      background: '#FFFFFF', // white
+//      surface: '#F5F5F5',   // light grey
+//      text: '#202124',      // dark grey/almost black
+//      error: '#EA4335',     // red (kept the same for consistency)
+//      disabled: '#9AA0A6',  // medium grey (kept the same)
+//      placeholder: '#5F6368' // dark grey
 //   } as ExtendedColors,
 // };
 

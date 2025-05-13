@@ -11,11 +11,11 @@ import { MaidAuthProvider } from './src/hooks/useMaidauth';
 import 'react-native-get-random-values';
 import { LogBox } from 'react-native';
 
-LogBox.ignoreAllLogs(true); // Hides all yellow box warnings
-if (__DEV__) {
-  // @ts-ignore
-  console.error = () => {};
-}
+// LogBox.ignoreAllLogs(true); // Hides all yellow box warnings
+// if (__DEV__) {
+//   // @ts-ignore
+//   console.error = () => {};
+// }
 
 export default function App() {
   return (

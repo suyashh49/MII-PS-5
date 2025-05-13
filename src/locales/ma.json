@@ -110,7 +110,30 @@
         "sending_otp_to": "या नंबरवर OTP पाठवला जात आहे",
         "otp_sent_alert": "OTP {{phone}} या नंबरवर पाठवला आहे",
         "otp_send_error": "OTP पाठवताना त्रुटी:",
-        "otp_failed_alert": "OTP पाठविण्यात अयशस्वी. पुन्हा प्रयत्न करा."
+        "otp_failed_alert": "OTP पाठविण्यात अयशस्वी. पुन्हा प्रयत्न करा.",
+        "settings": "सेटिंग्ज",
+        "account": "खाते",
+        "profile": "प्रोफाइल",
+        "view_edit_profile": "तुमचा प्रोफाइल पहा आणि संपादित करा",
+        "notifications": "सूचना",
+        "manage_notifications": "सूचना प्राधान्ये व्यवस्थापित करा",
+        "location_services": "स्थान सेवा",
+        "enable_location_services": "चांगल्या अनुभवासाठी स्थान सेवा सक्षम करा",
+        "appearance": "दिसणे",
+        "dark_mode": "डार्क मोड",
+        "enable_dark_mode": "अॅपसाठी डार्क थीम सक्षम करा",
+        "language": "भाषा",
+       
+        "support": "सहाय्य",
+        "help_center": "मदत केंद्र",
+        "get_help": "अॅप वापरण्यासाठी मदत मिळवा",
+        "about": "बद्दल",
+        "about_app": "मेड इन इंडिया अॅप बद्दल",
+        "privacy_policy": "गोपनीयता धोरण",
+
+        "logout_confirmation": "लॉगआउट पुष्टीकरण",
+        "logout_message": "तुम्हाला खात्री आहे की तुम्ही लॉगआउट करू इच्छिता?",
+        "cancel": "रद्द करा"
       
     
   }

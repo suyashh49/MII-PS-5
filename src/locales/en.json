@@ -112,7 +112,32 @@
       "sending_otp_to": "Sending OTP to",
       "otp_sent_alert": "OTP sent to {{phone}}",
       "otp_send_error": "Error sending OTP:",
-      "otp_failed_alert": "Failed to send OTP. Please try again."
+      "otp_failed_alert": "Failed to send OTP. Please try again.",
+
+  "settings": "Settings",
+  "account": "Account",
+  "profile": "Profile",
+  "view_edit_profile": "View and edit your profile",
+  "notifications": "Notifications",
+  "manage_notifications": "Manage notification preferences",
+  "location_services": "Location Services",
+  "enable_location_services": "Enable location services for better experience",
+  "appearance": "Appearance",
+  "dark_mode": "Dark Mode",
+  "enable_dark_mode": "Enable dark theme for the app",
+  "language": "Language",
+ 
+  "support": "Support",
+  "help_center": "Help Center",
+  "get_help": "Get help with using the app",
+  "about": "About",
+  "about_app": "About Maid In India app",
+  "privacy_policy": "Privacy Policy",
+ 
+  "logout_confirmation": "Logout Confirmation",
+  "logout_message": "Are you sure you want to logout?",
+  "cancel": "Cancel"
+ 
     
   
   
