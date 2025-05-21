@@ -1,7 +1,7 @@
 // src/screens/Maid/MaidCalendarScreen.tsx
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, Alert, TouchableOpacity, Linking } from 'react-native';
-import { Text, useTheme, Card } from 'react-native-paper';
+import { View, StyleSheet, Alert, TouchableOpacity, Linking} from 'react-native';
+import { Text, useTheme, Card, Button } from 'react-native-paper';
 import { Agenda as RawAgenda } from 'react-native-calendars';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -75,8 +75,8 @@ const MaidCalendarScreen: React.FC = () => {
     setItems(newItems);
   }, [bookings, t]);
 
-  useEffect(() => { 
-    generateCalendarItems(); 
+  useEffect(() => {
+    generateCalendarItems();
   }, [bookings, generateCalendarItems]);
 
   const toggleCardExpansion = (id: string) => {
@@ -152,14 +152,17 @@ const MaidCalendarScreen: React.FC = () => {
 
             {isExpanded && (
               <View style={styles.actionButtonsContainer}>
-                <TouchableOpacity
+                <Button
+                  mode="contained"
                   onPress={() => openDirections(item.location)}
-                  style={[styles.actionButton, { backgroundColor: theme.colors.primary }]}
+                  style={styles.actionButton}
+                  icon="map-marker-radius"
+                  labelStyle={styles.buttonLabel}
                 >
-                  <MaterialCommunityIcons name="map-marker-radius" size={20} color="#fff" />
-                  <Text style={styles.buttonLabel}>{t('directions')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                  label={t('directions')}
+                  </Button>
+                <Button
+                  mode="contained"
                   onPress={() => {
                     const phoneNumber = item.userContact;
                     if (!phoneNumber || phoneNumber === 'N/A') {
@@ -168,11 +171,12 @@ const MaidCalendarScreen: React.FC = () => {
                     }
                     Linking.openURL(`tel:${phoneNumber}`);
                   }}
-                  style={[styles.actionButton, { backgroundColor: '#4CAF50' }]}
-                >
-                  <MaterialCommunityIcons name="phone" size={20} color="#fff" />
-                  <Text style={styles.buttonLabel}>{t('call')}</Text>
-                </TouchableOpacity>
+                  style={[styles.actionButton2]}
+                  icon="phone"
+                  labelStyle={styles.buttonLabel}
+                  >
+                  label={t('call')}
+                  </Button>
               </View>
             )}
           </Card.Content>
@@ -303,6 +307,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
+  },
+  actionButton2: {
+    flex: 1,
+    marginHorizontal: 4,
+    borderRadius: 8,
+    backgroundColor: '#4CAF50',
   },
 });
 
