@@ -12,6 +12,10 @@ import Geolocation from '@react-native-community/geolocation';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../locales/i18n';
+import * as Animatable from 'react-native-animatable';
+import AnimatedButton from '../../componenets/AnimatedButton';
+import AnimatedCard from '../../componenets/AnimatedCard';
+import AnimatedLoader from '../../componenets/AnimatedLoader';
 import {
   User,
   Maid,

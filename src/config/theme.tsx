@@ -23,29 +23,34 @@
 
 // export default Theme;
 //------------------------------------------------------------------
-import { MD3LightTheme, MD3Theme } from 'react-native-paper';
+import { MD3LightTheme } from 'react-native-paper';
 
-type ExtendedColors = typeof MD3LightTheme.colors & {
-  placeholder: string;
-};
-
-const Theme: MD3Theme = {
+// Keep your existing theme colors
+const Theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#1368A4',  // blue (kept the same for brand consistency)
-    accent: '#34A853',   // green (kept the same for brand consistency)
-    background: '#FFFFFF', // white
-    surface: '#F5F5F5',   // light grey
-    text: '#202124',      // dark grey/almost black
-    error: '#EA4335',     // red (kept the same for consistency)
-    disabled: '#9AA0A6',  // medium grey (kept the same)
-    placeholder: '#5F6368', // dark grey (kept the same)
-  } as ExtendedColors,
+    primary: '#1368A4',
+    accent: '#34A853',
+    background: '#FFFFFF',
+    surface: '#F5F5F5',
+    text: '#202124',
+    error: '#EA4335',
+    disabled: '#9AA0A6',
+    placeholder: '#5F6368',
+  },
+  // Add animation configs
+  animation: {
+    scale: 1.0,
+    duration: {
+      short: 200,
+      medium: 300,
+      long: 500,
+    },
+  },
 };
 
 export default Theme;
-
 // // // src/config/theme.tsx
 // import React, { createContext, useContext, useState, useEffect } from 'react';
 // import { MD3DarkTheme, MD3LightTheme, MD3Theme } from 'react-native-paper';

@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@gluestack-style/react": "^1.0.57",
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-community/geolocation": "^3.4.0",
     "@react-native-picker/picker": "^2.11.0",
@@ -30,6 +31,7 @@
     "react": "18.3.1",
     "react-i18next": "^15.4.1",
     "react-native": "0.76.7",
+    "react-native-animatable": "^1.4.0",
     "react-native-calendars": "^1.1310.0",
     "react-native-chart-kit": "^6.12.0",
     "react-native-dotenv": "^3.4.11",
@@ -41,9 +43,10 @@
     "react-native-maps": "^1.22.6",
     "react-native-paper": "^5.13.1",
     "react-native-phone-number-input": "^2.1.0",
+    "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "^5.2.0",
     "react-native-screens": "^4.9.1",
-    "react-native-svg": "^15.11.2",
+    "react-native-svg": "15.8.0",
     "react-native-vector-icons": "^10.2.0"
   },
   "devDependencies": {

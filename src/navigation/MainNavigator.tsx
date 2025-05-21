@@ -93,6 +93,7 @@
 
 // src/navigation/MainNavigator.tsx
 import React from 'react';
+import { CardStyleInterpolators } from '@react-navigation/stack';
 import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import WelcomeScreen from '../screens/Welcome/WelcomeScreen';
@@ -110,6 +111,7 @@ import { useMaidAuth } from '../hooks/useMaidauth';
 import { ActivityIndicator, View } from 'react-native';
 import Feedback from '../screens/Home/Feedback';
 import UserProfile from '../screens/Home/UserProfile';
+import AnimatedLoader from '../componenets/AnimatedLoader';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -121,11 +123,7 @@ const MainNavigator = () => {
   const isLoading = userLoading || maidLoading;
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#4285F4" />
-      </View>
-    );
+      return <AnimatedLoader text="Loading..." />;
   }
 
   // Priority: Check for maid login first, then user login
@@ -134,8 +132,24 @@ const MainNavigator = () => {
       screenOptions={{
         headerShown: false,
         cardStyle: { backgroundColor: '#f7f7f7' },
+        cardStyleInterpolator: CardStyleInterpolators.forScaleFromCenterAndroid, // Smooth horizontal sliding
+        transitionSpec: {
+          open: {
+            animation: 'timing',
+            config: {
+              duration: 400,
+            },
+          },
+          close: {
+            animation: 'timing',
+            config: {
+              duration: 300,
+            },
+          },
+        },
       }}
     >
+   
       {maid ? (
          maid.profileCreated ? (
           <Stack.Screen 

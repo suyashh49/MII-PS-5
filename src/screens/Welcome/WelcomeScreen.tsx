@@ -7,6 +7,8 @@ import { RootStackParamList } from '../../types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../locales/i18n';
+import * as Animatable from 'react-native-animatable';
+import AnimatedButton from '../../componenets/AnimatedButton';
 
 const heroImage = require('../../assets/hero_1.png');
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
@@ -58,45 +60,56 @@ const WelcomeScreen = () => {
         source={heroImage}
         style={styles.backgroundImage}
         resizeMode="contain"
-      ></ImageBackground>
-      <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
-        <MaterialCommunityIcons name="broom" size={64} color={theme.colors.primary} />
-      </View>
-
-      <Text style={[styles.title, { color: theme.colors.onBackground }]}>
-        {t('appTitle')}
-      </Text>
-
-      <Menu
-        visible={menuVisible}
-        onDismiss={closeMenu}
-        anchor={
-          <Button
-            mode="outlined"
-            icon="translate"
-            onPress={openMenu}
-            style={{ marginBottom: 16, width: 180, alignSelf: 'center' }}
-            labelStyle={{ color: theme.colors.primary }}
-          >
-            {getLanguageDisplay()}
-          </Button>
-        }
+      />
+      
+      <Animatable.View 
+        animation="bounceIn" 
+        duration={1500}
+        style={[
+          styles.iconContainer, 
+          { backgroundColor: theme.colors.surfaceVariant }
+        ]}
       >
-        <Menu.Item onPress={() => { changeLanguage('en'); closeMenu(); }} title={t('english')} />
-        <Divider />
-        <Menu.Item onPress={() => { changeLanguage('hi'); closeMenu(); }} title={t('hindi')} />
+        <MaterialCommunityIcons name="broom" size={64} color={theme.colors.primary} />
+      </Animatable.View>
+
+      <Animatable.View animation="fadeIn" delay={500} duration={1000}>
+        <Text style={[styles.title, { color: theme.colors.onBackground }]}>
+          {t('appTitle')}
+        </Text>
+      </Animatable.View>
+
+      <Animatable.View animation="fadeInUp" delay={800} duration={800}>
+        <Menu
+          visible={menuVisible}
+          onDismiss={closeMenu}
+          anchor={
+            <Button
+              mode="outlined"
+              icon="translate"
+              onPress={openMenu}
+              style={{ marginBottom: 16, width: 180, alignSelf: 'center' }}
+              labelStyle={{ color: theme.colors.primary }}
+            >
+              {getLanguageDisplay()}
+            </Button>
+          }
+        >
+          <Menu.Item onPress={() => { changeLanguage('en'); closeMenu(); }} title={t('english')} />
+          <Divider />
+          <Menu.Item onPress={() => { changeLanguage('hi'); closeMenu(); }} title={t('hindi')} />
           <Divider />
           <Menu.Item onPress={() => { changeLanguage('ma'); closeMenu(); }} title={t('marathi')} />
-      </Menu>
+        </Menu>
+      </Animatable.View>
 
-      <Button
-        mode="contained"
-        onPress={handleGetStarted}
-        style={styles.button}
-        labelStyle={styles.buttonLabel}
-      >
-        {t('next')}
-      </Button>
+      <Animatable.View animation="fadeInUp" delay={1000} duration={800}>
+        <AnimatedButton
+          onPress={handleGetStarted}
+          label={t('next')}
+          style={styles.button}
+        />
+      </Animatable.View>
     </View>
   );
 };
@@ -128,13 +141,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   button: {
-    width: '90%',
+    width: 250,
     borderRadius: 24,
-    paddingVertical: 4,
-  },
-  buttonLabel: {
-    fontSize: 16,
-    textTransform: 'none',
+    marginTop: 16,
   },
 });
 
