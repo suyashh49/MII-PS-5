@@ -126,7 +126,7 @@ const MainNavigator = () => {
       return <AnimatedLoader text="Loading..." />;
   }
 
-  // Priority: Check for maid login first, then user login
+  
   return (
     <Stack.Navigator
       screenOptions={{

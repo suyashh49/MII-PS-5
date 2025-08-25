@@ -419,6 +419,13 @@ const CartCheckout = () => {
     );
   };
 
+  const showMapModal = () => {
+    setSelectedMarker({
+      latitude: mapRegion.latitude,
+      longitude: mapRegion.longitude
+    });
+    setMapVisible(true);
+  };
   
 
   return (
@@ -543,18 +550,28 @@ const CartCheckout = () => {
         provider={PROVIDER_GOOGLE}
         style={{ width: '100%', height: height * 0.7, marginTop: 80 }}
         region={mapRegion}
-        onRegionChangeComplete={setMapRegion}
+        onRegionChangeComplete={(region) => {
+          setMapRegion(region);
+        
+          if (!selectedMarker) {
+            setSelectedMarker({
+              latitude: region.latitude,
+              longitude: region.longitude
+            });
+          }
+        }}
         onPress={(e) => setSelectedMarker(e.nativeEvent.coordinate)}
         
       >
-        {selectedMarker && (
-          <Marker
-            coordinate={selectedMarker}
-            draggable
-            onDragEnd={(e) => setSelectedMarker(e.nativeEvent.coordinate)}
-            pinColor="red" 
-          />
-        )}
+        <Marker
+          coordinate={selectedMarker || {
+            latitude: mapRegion.latitude,
+            longitude: mapRegion.longitude
+          }}
+          draggable
+          onDragEnd={(e) => setSelectedMarker(e.nativeEvent.coordinate)}
+          pinColor="red"
+        />
       </MapView>
 
       <View style={{ padding: 16, backgroundColor: theme.colors.background }}>
@@ -619,14 +636,13 @@ const CartCheckout = () => {
           </Card.Content>
         </Card>
 
-
         {/* User Information */}
         <Card style={styles.infoCard}>
           <Card.Content>
             <Text style={styles.infoTitle}>User's Address</Text>
             <Button
               mode="outlined"
-              onPress={() => setMapVisible(true)}
+              onPress={showMapModal}
               style={{ marginBottom: 12 , borderRadius: 4}}
               labelStyle={{ color: theme.colors.onBackground }}
             >
